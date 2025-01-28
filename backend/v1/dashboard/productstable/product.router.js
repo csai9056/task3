@@ -1,0 +1,14 @@
+const express = require("express");
+const getproduct = require("./getproduct");
+const postproduct = require("./postproduct");
+const deleteproduct = require("./deleteproduct");
+const updateimage = require("./updateimage");
+const editproduct = require("./edit.produt");
+const decryptPayload = require("../../../middlewares/decrypt");
+const productrouter = express.Router();
+productrouter.get("/", decryptPayload, getproduct);
+productrouter.post("/", decryptPayload, postproduct);
+productrouter.put("/delete", decryptPayload, deleteproduct);
+productrouter.put("/updateimage", decryptPayload, updateimage);
+productrouter.put("/edit", decryptPayload, editproduct);
+module.exports = productrouter;

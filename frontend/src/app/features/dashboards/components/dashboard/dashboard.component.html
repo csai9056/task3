@@ -1,0 +1,452 @@
+<div class="card">
+  <div class="card-header bg-white">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-0">Inventory movements</h5>
+        <small class="text-muted">{{ totalitems }} inventory</small>
+      </div>
+      <div>
+        <button
+          class="btn btn-light border border-secondary me-2"
+          *ngIf="view"
+          data-bs-toggle="modal"
+          data-bs-target="#moveToCartModal"
+          (click)="movecart()"
+        >
+          Move to cart
+        </button>
+        <button
+          class="btn btn-light me-2 border border-secondary"
+          (click)="ondownload()"
+          *ngIf="view"
+        >
+          Download All
+        </button>
+        <button
+          class="btn btn-light me-2 border border-secondary position-relative"
+          *ngIf="view"
+        >
+          <i class="bi bi-upload"></i>
+          Import
+          <input
+            type="file"
+            (change)="onfilechange($event)"
+            style="
+              opacity: 0;
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              cursor: pointer;
+            "
+          />
+        </button>
+        <!-- Add Product Button -->
+        <button
+          class="btn btn-primary violet-button"
+          data-bs-toggle="modal"
+          data-bs-target="#addProductModal"
+          *ngIf="view"
+        >
+          + Add Product
+        </button>
+      </div>
+    </div>
+    <div class="mt-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="btn-group">
+          <button
+            class="btn"
+            [ngClass]="{
+              'btn-light active border border-secondary': view,
+              'btn-secondary border': view
+            }"
+            (click)="onview()"
+          >
+            View all
+          </button>
+          <button
+            class="btn"
+            [ngClass]="{
+              'btn-light active border border-secondary': !view,
+              'btn-secondary border': !view
+            }"
+            (click)="oncart()"
+          >
+            Cart
+          </button>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center">
+          <!-- Search Input -->
+          <div class="position-relative">
+            <input
+              type="text"
+              class="form-control ps-5"
+              placeholder="Search"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="fetchPage(1)"
+            />
+            <i
+              class="bi bi-search position-absolute text-secondary"
+              style="left: 15px; top: 50%; transform: translateY(-50%)"
+            ></i>
+          </div>
+
+          <!-- Filter Dropdown -->
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary d-flex align-items-center"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-filter me-2"></i> Filter
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <label class="dropdown-item">
+                  <input
+                    type="checkbox"
+                    class="form-check-input me-2"
+                    (change)="onCheckboxChange('category_name', $event)"
+                  />
+                  Category
+                </label>
+              </li>
+              <li>
+                <label class="dropdown-item">
+                  <input
+                    type="checkbox"
+                    class="form-check-input me-2"
+                    (change)="onCheckboxChange('vendor_name', $event)"
+                  />
+                  Vendors
+                </label>
+              </li>
+              <li>
+                <label class="dropdown-item">
+                  <input
+                    type="checkbox"
+                    class="form-check-input me-2"
+                    (change)="onCheckboxChange('product_name', $event)"
+                  />
+                  Product Name
+                </label>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" *ngIf="view">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Product Name</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Vendors</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of products?.data; let i = index">
+              <!-- {{
+              item | json
+            }} -->
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="item.selected"
+                  (click)="check(item, $event, item?.product_id)"
+                />
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <!-- {{ item | json }} -->
+                  <div *ngIf="item?.product_image">
+                    <img
+                      src="{{ item?.product_image }}"
+                      class="rounded me-2"
+                      alt="Product"
+                      style="width: 40px; height: 40px; object-fit: cover"
+                    />
+                  </div>
+                  <div *ngIf="!item?.product_image">
+                    <b
+                      style="
+                        background-color: peru;
+
+                        border: 2px solid black;
+                        border-radius: 10px;
+                      "
+                    >
+                      {{ item?.product_name.substring(0, 2) }}&nbsp;
+                    </b>
+                  </div>
+                  <span> &nbsp; {{ item?.product_name }}</span>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="badge text-bg-danger"
+                  *ngIf="item?.status == '0' || item?.quantity <= 0"
+                >
+                  Sold Out
+                </span>
+                <span
+                  class="badge text-bg-success"
+                  *ngIf="item?.status == '1' && item?.quantity > 0"
+                >
+                  Available
+                </span>
+              </td>
+              <td>{{ item?.category }}</td>
+              <td>
+                <span class="badge bg-light text-dark me-1">{{
+                  item?.vendors
+                }}</span>
+              </td>
+              <td>{{ item?.quantity }}</td>
+              <td>{{ item?.unit }}</td>
+              <td>
+                <button
+                  class="btn btn-light btn-sm me-1"
+                  (click)="onpdfdownload(item)"
+                >
+                  <i class="bi bi-download"></i>
+                </button>
+                <button
+                  class="btn btn-light btn-sm me-1"
+                  data-bs-toggle="modal"
+                  data-bs-target="#confirmationModal"
+                  (click)="onproductdelete(item?.product_id)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+                <button
+                  class="btn btn-light btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editProductModal"
+                  (click)="onproductedit(item)"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <nav aria-label="Page navigation" class="mt-3">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="+currentPage === 1">
+              <a
+                class="page-link"
+                (click)="fetchPage(+currentPage - 1)"
+                aria-label="Previous"
+                style="cursor: pointer"
+              >
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            <li
+              class="page-item"
+              *ngFor="let page of pages"
+              [class.active]="page === +currentPage"
+            >
+              <a
+                class="page-link"
+                style="cursor: pointer"
+                (click)="fetchPage(page)"
+                >{{ page }}</a
+              >
+            </li>
+            <li
+              class="page-item"
+              [class.disabled]="+currentPage === totalPages"
+            >
+              <a
+                class="page-link"
+                (click)="fetchPage(+currentPage + 1)"
+                style="cursor: pointer"
+                aria-label="Next"
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <!-- Add Product Modal -->
+      <div
+        class="modal fade"
+        id="addProductModal"
+        tabindex="-1"
+        aria-labelledby="addProductModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <!-- Add Product Form Component -->
+              <app-add-product
+                (call1)="call2($event)"
+                (formSubmitted)="handleform($event)"
+              ></app-add-product>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="!view">
+        <h5>Cart Items</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Vendors</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of cart | filter : searchTerm">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <!-- {{ item | json }} -->
+                    <b
+                      style="
+                        background-color: peru;
+
+                        border: 2px solid black;
+                        border-radius: 10px;
+                      "
+                    >
+                      {{ item?.product_name.substring(0, 2) }}&nbsp;
+                    </b>
+                    <span> &nbsp; {{ item?.product_name }}</span>
+                  </div>
+                </td>
+                <td>{{ item?.category }}</td>
+                <td>{{ item?.vendor_name }}</td>
+                <td>{{ item?.quantity }}</td>
+                <td (click)="ondelete(item)">
+                  <i class="bi bi-trash text-danger"></i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- delete model -->
+  <div
+    class="modal fade"
+    id="confirmationModal"
+    tabindex="-1"
+    aria-labelledby="confirmationModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmationModalLabel">
+            Confirm Action
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">Are you sure you want to delete</div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            id="confirmAction"
+            data-bs-dismiss="modal"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="modal fade"
+    id="editProductModal"
+    tabindex="-1"
+    aria-labelledby="addProductModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-add-product (formSubmitted)="editform($event)"></app-add-product>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="modal fade"
+    id="moveToCartModal"
+    tabindex="-1"
+    aria-labelledby="moveToCartModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="moveToCartModalLabel">Move to Cart</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <!-- Move to Cart Component -->
+          <app-movetocard (gettable)="call2($event)"></app-movetocard>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

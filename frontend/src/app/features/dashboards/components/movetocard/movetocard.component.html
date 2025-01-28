@@ -1,0 +1,82 @@
+<!-- {{ this.cart | json }} -->
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>
+          <input type="checkbox" />
+        </th>
+        <th>Product Name</th>
+        <th>Created At <i class="bi bi-info-circle" title="Sort"></i></th>
+        <th>Category <i class="bi bi-info-circle" title="Sort"></i></th>
+        <th>Vendors</th>
+        <th>Quantity</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of cart; let i = index">
+        <!-- {{}} -->
+        <td>
+          <input
+            type="checkbox"
+            [checked]="item.selected"
+            (click)="addcards(item, $event, i)"
+            [disabled]="quantity[i] <= 0"
+          />
+        </td>
+        <td>
+          <div class="d-flex align-items-center">
+            <img
+              src="{{ item?.product_image }}"
+              class="rounded me-2"
+              alt="Product"
+              style="width: 40px; height: 40px; object-fit: cover"
+            />
+            {{ item?.product_name }}
+          </div>
+        </td>
+        <td>{{ item?.created_at }}</td>
+        <td>{{ item?.category }}</td>
+        <td>
+          {{ item?.vendors }}
+        </td>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <button
+              class="btn btn-light btn-sm px-2"
+              (click)="sub(i)"
+              [disabled]="quantity[i] <= 0"
+            >
+              -
+            </button>
+            <span>{{ quantity[i] | json }}</span>
+            <button
+              class="btn btn-light btn-sm px-2"
+              (click)="add(i)"
+              [disabled]="quantity[i] >= item?.quantity"
+            >
+              <!-- {{ item?.quantity }} -->
+              +
+            </button>
+          </div>
+        </td>
+        <td>
+          <button
+            class="btn btn-danger btn-sm"
+            (click)="ondeletecart(i, item?.product_id)"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<!-- Action Buttons -->
+<div class="d-flex justify-content-between mt-4">
+  <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button class="btn btn-primary" (click)="onmove()" data-bs-dismiss="modal">
+    Move
+  </button>
+</div>
