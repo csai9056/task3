@@ -34,19 +34,23 @@ export class DashboardInterceptor implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    const accessToken = this.authService.getAccessToken();
-    if (accessToken) {
-      request = this.addToken(request, accessToken);
-    }
+    if (request.url.includes('/akv-interns') || request.url.includes('/api')) {
+      return next.handle(request);
+    } else {
+      const accessToken = this.authService.getAccessToken();
+      if (accessToken) {
+        request = this.addToken(request, accessToken);
+      }
 
-    return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          return this.handle401Error(request, next);
-        }
-        return throwError(() => error);
-      })
-    );
+      return next.handle(request).pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            return this.handle401Error(request, next);
+          }
+          return throwError(() => error);
+        })
+      );
+    }
   }
 
   private addToken(request: HttpRequest<any>, token: string) {

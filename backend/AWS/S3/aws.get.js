@@ -7,7 +7,10 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.secretAccessKey,
   },
 });
+
 const getdata = async (req, res) => {
+  // console.log("pass", process.env.secretAccessKey);
+
   try {
     const command = new ListObjectsV2Command({
       Bucket: "akv-interns",
