@@ -10,6 +10,9 @@ const deleteproduct = async (req, res) => {
       .where("product_id", id)
       .update({ status: "99" });
     console.log("delete", res1);
+    const res2 = await db("product_to_vendor")
+      .where("product_id", id)
+      .update({ status: "99" });
     res.status(200).json(
       encryptData({
         message: "succesfully deleted",

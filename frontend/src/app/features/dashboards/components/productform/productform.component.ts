@@ -41,7 +41,7 @@ export class ProductformComponent implements OnInit {
     this.productForm = this.fb.group({
       productName: ['', Validators.required],
       category: ['', Validators.required],
-      vendor: [[], Validators.required],
+      vendor: [[]],
       quantity: ['', [Validators.required, Validators.min(1)]],
       unit: ['', Validators.required],
       status: ['', Validators.required],
@@ -166,5 +166,24 @@ export class ProductformComponent implements OnInit {
       unit: this.item.unit,
       status: this.item.status,
     });
+  }
+  selectedVendors: any[] = [];
+  onVendorChange(event: any) {
+    console.log('dfghjk');
+
+    const vendorId = event.target.value;
+    console.log(vendorId);
+
+    if (event.target.checked) {
+      this.selectedVendors.push(vendorId);
+    } else {
+      this.selectedVendors = this.selectedVendors.filter(
+        (id) => id !== vendorId
+      );
+    }
+    this.productForm.get('vendor')?.setValue(this.selectedVendors);
+  }
+  isSelected(vendorId: number): boolean {
+    return this.selectedVendors.includes(vendorId);
   }
 }

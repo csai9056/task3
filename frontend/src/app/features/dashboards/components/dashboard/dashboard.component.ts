@@ -46,8 +46,9 @@ export class DashboardComponent implements OnInit {
   data: any;
   onfilechange(event: any): void {
     // console.log('event');
-    const file = event.target.files[0];
-    // console.log(file);
+    const file = event.target.files;
+
+    console.log(file);
     if (!file) {
       // alert('No file selected.');
       this.toastrService.error('no file selected');

@@ -13,7 +13,7 @@ const postproduct = async (req, res) => {
     productImage,
     vendor,
   } = req.body;
-  // console.log(req.body);
+  console.log(req.body);
 
   // console.log(req.body);
   // console.log(
@@ -39,12 +39,12 @@ const postproduct = async (req, res) => {
       ["product_id"]
     );
     // console.log("Inserted product ID:", productId);
-    const data = {
-      vendor_id: vendor,
+    const vendorData = vendor.map((v) => ({
+      vendor_id: v,
       product_id: productId,
       status: "1",
-    };
-    await db("product_to_vendor").insert(data);
+    }));
+    await db("product_to_vendor").insert(vendorData);
     console.log("Vendor associations added successfully.");
 
     // console.log("jandnj", req.body);

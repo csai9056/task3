@@ -42,23 +42,19 @@
         Category is required.
       </div>
     </div>
-    <div class="mb-3">
-      <label for="vendor" class="form-label">Vendor</label>
-      <select id="vendor" class="form-select" formControlName="vendor">
-        <option *ngFor="let vendor of vendors?.data" [value]="vendor.vendor_id">
-          {{ vendor.vendor_name }}
-        </option>
-      </select>
-      <div
-        *ngIf="
-          productForm.get('vendor')?.invalid &&
-          productForm.get('vendor')?.touched
-        "
-        class="text-danger"
-      >
-        Vendor is required.
-      </div>
+    <div class="form-check" *ngFor="let vendor of vendors?.data">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        [value]="vendor.vendor_id"
+        (change)="onVendorChange($event)"
+        [checked]="isSelected(vendor.vendor_id)"
+      />
+      <label class="form-check-label">
+        {{ vendor.vendor_name }}
+      </label>
     </div>
+
     <div class="mb-3">
       <label for="quantity" class="form-label">Quantity in stock</label>
       <input

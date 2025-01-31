@@ -20,8 +20,8 @@ const getproduct = async (req, res) => {
         "p.unit_price as unit",
         "c.category_name as category",
         "p.created_at",
-        "v.vendor_name as vendors",
-        "v.vendor_id as vendor_ids"
+        db.raw("GROUP_CONCAT(v.vendor_id) as vendor_id"),
+        db.raw("GROUP_CONCAT(v.vendor_name) as vendor_names")
       )
       .leftJoin("categories as c", "p.category_id", "c.category_id")
       .leftJoin("product_to_vendor as pv", "p.product_id", "pv.product_id")
@@ -67,10 +67,7 @@ const getproduct = async (req, res) => {
       );
     }
     const query1 = query;
-    query = query
-      .groupBy("p.product_id", "v.vendor_name", "v.vendor_id")
-      .limit(limit)
-      .offset(offset);
+    query = query.groupBy("p.product_id").limit(limit).offset(offset);
     const data = await query;
     let totalQuery = db("products as p")
       .countDistinct("p.product_id as total")
