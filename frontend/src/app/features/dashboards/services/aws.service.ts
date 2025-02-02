@@ -13,7 +13,8 @@ export class AwsService {
   getPresignedUrl(
     fileName: any,
     fileType: string,
-    userId: string
+    userId: string,
+    foldername: string
   ): Observable<{ presignedUrl: string; fileName: string; userId: string }> {
     // console.log('fln', fileName);
     console.log('userId', userId);
@@ -26,6 +27,7 @@ export class AwsService {
       fileName,
       fileType,
       userId,
+      foldername,
     });
   }
   uploadFileToS3(presignedurl: string, file: File): Observable<any> {

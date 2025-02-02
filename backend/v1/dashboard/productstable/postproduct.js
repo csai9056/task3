@@ -14,18 +14,6 @@ const postproduct = async (req, res) => {
     vendor,
   } = req.body;
   console.log(req.body);
-
-  // console.log(req.body);
-  // console.log(
-  //   productName,
-  //   category,
-  //   quantity,
-  //   unit,
-  //   status,
-  //   productImage,
-  //   vendor
-  // );
-
   try {
     const [productId] = await db("products").insert(
       {

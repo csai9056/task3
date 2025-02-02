@@ -18,10 +18,8 @@ const s3Client = new S3Client({
 
 const getUrl = async (req, res) => {
   let { fileName, fileType, userId, flodername } = req.body;
-  if (userId === "-1") {
-    flodername = "files";
-    // console.log("cvbn");
-  } else flodername = "profile-photos";
+  logger.info(req.body.foldername);
+  flodername = req.body.foldername;
   try {
     if (!fileName || !fileType || !userId) {
       return res

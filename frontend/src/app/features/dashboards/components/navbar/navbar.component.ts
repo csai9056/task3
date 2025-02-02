@@ -55,8 +55,9 @@ export class NavbarComponent implements OnInit {
       const fileName = this.selectedFile.name;
       const fileType = this.selectedFile.type;
       console.log('befors pre', this.user.user_id);
+      const folderName = 'profile-photos';
       this.aws
-        .getPresignedUrl(fileName, fileType, this.user.user_id)
+        .getPresignedUrl(fileName, fileType, this.user.user_id, folderName)
         .subscribe({
           next: (response: any) => {
             const { presignedUrl, fileName, userId } = response;

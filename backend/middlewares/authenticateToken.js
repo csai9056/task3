@@ -11,7 +11,7 @@ const authMiddleware = (req, res, next) => {
   try {
     const key = "key";
     const decoded = jwt.verify(token, key);
-
+    req.id = decoded.userId;
     next();
   } catch (error) {
     console.error("Authorization error:", error);

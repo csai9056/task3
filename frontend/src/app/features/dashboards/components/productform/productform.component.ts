@@ -117,7 +117,8 @@ export class ProductformComponent implements OnInit {
       const fileName = this.selectedFile.name;
       const fileType = this.selectedFile.type;
       console.log('befors pre');
-      this.aws.getPresignedUrl(fileName, fileType, '3').subscribe({
+      const folderName = 'profile-photos';
+      this.aws.getPresignedUrl(fileName, fileType, '3', folderName).subscribe({
         next: (response: any) => {
           const { presignedUrl, fileName, userId } = response;
           // console.log(response.image);

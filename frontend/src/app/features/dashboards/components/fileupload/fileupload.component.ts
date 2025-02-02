@@ -48,7 +48,8 @@ export class FileuploadComponent implements OnInit {
       const fileType = this.selectedFile.type;
       const flodername = 'files';
       // console.log('befors pre', this.user.user_id);
-      this.aws.getPresignedUrl(fileName, fileType, '-1').subscribe({
+      const folderName="profile-photos";
+      this.aws.getPresignedUrl(fileName, fileType, '-1',folderName).subscribe({
         next: (response) => {
           const { presignedUrl, fileName, userId } = response;
           this.uploadToS3(presignedUrl, fileName, userId);

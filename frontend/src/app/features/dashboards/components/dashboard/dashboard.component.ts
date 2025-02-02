@@ -8,6 +8,7 @@ import { DashboardService } from '../dashboard.service';
 import { BehaviorSubject, debounceTime, Subject } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { error } from 'node:console';
+import { AwsService } from '../../services/aws.service';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -22,7 +23,11 @@ export class DashboardComponent implements OnInit {
   totalitems: number = 0;
   pages: number[] = [];
   view: boolean = true;
+  importData: any;
   movetocart: boolean = true;
+  userid: any = 1;
+  sendingData: any[] = [];
+  status: boolean = false;
   movecart() {
     // this.movetocart = false;
     this.dashservice.addcart(this.download);
@@ -31,7 +36,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private dashservice: DashboardService,
-    private toastrService: ToastrService
+    private toastrService: ToastrService,
+    private aws: AwsService
   ) {}
   ngOnInit(): void {
     this.dashservice.delaySubject
@@ -40,41 +46,40 @@ export class DashboardComponent implements OnInit {
         this.fetchPage1(page);
         // this.oncart();
       });
+    this.userid = this.dashservice.getuserid();
     // this.fetchPage1(1);
   }
 
   data: any;
   onfilechange(event: any): void {
     // console.log('event');
-    const file = event.target.files;
+    const Groupfile = event.target.files;
 
-    console.log(file);
-    if (!file) {
-      // alert('No file selected.');
-      this.toastrService.error('no file selected');
-      return;
-    }
-    // Validate the file type
-    const fileType = file.name.split('.').pop();
-    if (fileType !== 'xlsx' && fileType !== 'xls') {
-      this.toastrService.error(
-        'Invalid file type. Please upload an Excel file.'
-      );
-      return;
-    }
-    const reader = new FileReader();
-    console.log(reader);
-    reader.onload = (e: any) => {
-      console.log('Reader onload called!');
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      this.data = XLSX.utils.sheet_to_json(worksheet);
-      console.log('data is ', this.data);
-      this.adddata();
-    };
-    reader.readAsArrayBuffer(file);
+    const promise = this.fun(Groupfile);
+    console.log(promise);
+
+    promise.then(() => {
+      if (this.sendingData.length > 0) {
+        console.log(this.sendingData);
+        this.http
+          .post(`${environment.url}/api/upload/products`, this.sendingData)
+          .subscribe({
+            next: () => {
+              this.sendingData = [];
+            },
+          });
+      }
+    });
+  }
+  statusArray: any;
+  onstatus() {
+    this.view = false;
+    this.status = true;
+    this.cart = false;
+    this.http.get(`${environment.url}/dash/status`).subscribe((data: any) => {
+      console.log('status', data);
+      this.statusArray = data.data;
+    });
   }
   adddata() {
     if (this.data) {
@@ -116,13 +121,15 @@ export class DashboardComponent implements OnInit {
   }
   onview() {
     this.view = true;
+    this.status = false;
   }
   cart: any;
   user: any;
-  userid: number = 1;
+
   oncart() {
     this.view = false;
-    this.userid = this.dashservice.getuserid();
+    this.status = false;
+
     this.dashservice.getcartdata(this.userid).subscribe((data: any) => {
       this.cart = data.data;
       console.log(data);
@@ -219,4 +226,53 @@ export class DashboardComponent implements OnInit {
       },
     });
   }
+  fun(Groupfile: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let uploadCount = 0;
+      for (let file of Groupfile) {
+        if (!file) {
+          this.toastrService.error('No file selected');
+          reject('No file selected');
+          return;
+        }
+
+        const File1 = file.name.split('.');
+        const fileType = File1.pop();
+        const folderName = 'product-files';
+
+        if (fileType !== 'xlsx' && fileType !== 'xls') {
+          this.toastrService.error(`Invalid file type: ${fileType}`);
+        } else {
+          this.aws
+            .getPresignedUrl(file.name, fileType, this.userid, folderName)
+            .subscribe({
+              next: (response: any) => {
+                this.aws.uploadFileToS3(response.presignedUrl, file).subscribe({
+                  next: () => {
+                    uploadCount++;
+                    console.log(`File uploaded: ${file.name}`);
+                    if (uploadCount === Groupfile.length) {
+                      resolve();
+                    }
+                  },
+                  error: (err) => {
+                    console.error('Upload failed:', err);
+                    reject(err);
+                  },
+                });
+                this.sendingData.push({
+                  user_id: response.userId,
+                  file_name: file.name,
+                });
+              },
+              error: (err) => {
+                console.error('Presigned URL Error:', err);
+                reject(err);
+              },
+            });
+        }
+      }
+    });
+  }
+  showstatus(data: any) {}
 }

@@ -30,6 +30,7 @@
           Import
           <input
             type="file"
+            multiple
             (change)="onfilechange($event)"
             style="
               opacity: 0;
@@ -42,6 +43,7 @@
             "
           />
         </button>
+
         <!-- Add Product Button -->
         <button
           class="btn btn-primary violet-button"
@@ -69,12 +71,22 @@
           <button
             class="btn"
             [ngClass]="{
-              'btn-light active border border-secondary': !view,
-              'btn-secondary border': !view
+              'btn-light active border border-secondary': !view && !status,
+              'btn-secondary border': !view && !status
             }"
             (click)="oncart()"
           >
             Cart
+          </button>
+          <button
+            class="btn"
+            [ngClass]="{
+              'btn-light active border border-secondary': status,
+              'btn-secondary border': status && !cart
+            }"
+            (click)="onstatus()"
+          >
+            status
           </button>
         </div>
 
@@ -254,7 +266,7 @@
                 <span aria-hidden="true">&laquo;</span>
               </a>
             </li>
-            <li
+            <!-- <li
               class="page-item"
               *ngFor="let page of pages"
               [class.active]="page === +currentPage"
@@ -265,7 +277,7 @@
                 (click)="fetchPage(page)"
                 >{{ page }}</a
               >
-            </li>
+            </li> -->
             <li
               class="page-item"
               [class.disabled]="+currentPage === totalPages"
@@ -313,7 +325,7 @@
       </div>
     </div>
     <div class="card-body">
-      <div *ngIf="!view">
+      <div *ngIf="!view && !status">
         <h5>Cart Items</h5>
         <div class="table-responsive">
           <table class="table table-hover align-middle">
@@ -354,6 +366,51 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div *ngIf="!view && status">
+      <h5>Status</h5>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Product file name</th>
+              <th>product count</th>
+              <th>accepted</th>
+              <th>rejected</th>
+              <th>error file</th>
+              <th>status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of statusArray">
+              <td>
+                <div class="d-flex align-items-center">
+                  <!-- {{ item | json }} -->
+                  <b
+                    style="
+                      background-color: peru;
+
+                      border: 2px solid black;
+                      border-radius: 10px;
+                    "
+                  >
+                  </b>
+                  <span> &nbsp; {{ item?.filename }}</span>
+                </div>
+              </td>
+              <td>{{ item?.product_count }}</td>
+              <td>{{ item?.valid_count }}</td>
+              <td>{{ item?.invalid_count }}</td>
+              <td (click)="showstatus(item?.error_url)">
+                <i class="bi bi-trash text-danger"></i>
+              </td>
+              <td>{{ item?.status }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

@@ -1,23 +1,17 @@
 const crypto = require("crypto-js");
 const dotenv = require("dotenv");
 dotenv.config();
-const decryptPayload = (req, res, next) => {
-  // console.log(req.data);
-  const data = req.body?.data || req.data;
-
+const decryptPayloadaxios = (data) => {
   if (data) {
     try {
       const bytes = crypto.AES.decrypt(data, "key");
       const decryptedData = bytes.toString(crypto.enc.Utf8);
       // console.log("Decrypted Data " + decryptedData);
-      req.body = JSON.parse(decryptedData);
+      return JSON.parse(decryptedData);
     } catch (err) {
-      return res
-        .status(400)
-        .json({ message: "Failed to decrypt request body." });
+      return err;
     }
   }
-  next();
 };
 
-module.exports = decryptPayload;
+module.exports = decryptPayloadaxios;
