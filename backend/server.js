@@ -12,8 +12,20 @@ const decryptPayload = require("./middlewares/decrypt");
 const globalError = require("./utils/errorController");
 const logger = require("./middlewares/logger");
 const helmet = require("helmet");
-const cron = require("./v1/upload/cron");
+
 const cornfunction = require("./v1/upload/croncontroller");
+const socketIo = require("socket.io");
+const http = require("http");
+const { loggers } = require("winston");
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+let userSockets = {};
+require("./v1/upload/cron")(io, userSockets);
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(bodyParser.json());
@@ -24,17 +36,24 @@ const limiter = rateLimit({
   max: 10000,
   message: "Too many requests from this IP, please try again later.",
 });
-
+io.on("connection", (socket) => {
+  console.log("sdfghjk");
+  socket.on("userConnected", (userid) => {
+    userSockets[userid] = socket.id;
+    console.log(`User Connected ${userid}`);
+  });
+});
 app.use(limiter);
 app.use("/auth", authRouter);
 app.use("/dash", dashboard);
 app.use("/api/upload", uploadrouter);
 app.use("/api", aws);
+
 // app.use("api/upload", uploadrouter);
 app.use(globalError);
 cornfunction();
 logger.info("application started");
 
-app.listen(Port, () =>
+server.listen(Port, () =>
   console.log(`Server running on http://localhost:${Port}`)
 );

@@ -3,6 +3,10 @@ import { AwsService } from '../../services/aws.service';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
+import { io, Socket } from 'socket.io-client';
+import { AuthService } from 'src/app/features/auth/auth.service';
+import { ToastrService } from 'ngx-toastr';
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -10,16 +14,26 @@ import { environment } from 'src/environments/environment';
 })
 export class NavbarComponent implements OnInit {
   bootstrap: any;
+  socket!: Socket;
   user: any = {};
   selectedFile: any;
   fileUrl: string = '';
   constructor(
     private aws: AwsService,
     private router: Router,
-    private Http: HttpClient
+    private Http: HttpClient,
+    private auth: AuthService,
+    private toast: ToastrService
   ) {}
   jwtToken: string = ' ';
+  notifications: any;
   ngOnInit(): void {
+    this.Http.get(`${environment.url}/auth/getnotifications`).subscribe(
+      (data: any) => {
+        console.log('notifications', data);
+        if (data.data) this.toast.info(data.data);
+      }
+    );
     if (sessionStorage) {
       const jwtToken = sessionStorage.getItem('access_token');
       if (jwtToken) {
@@ -38,6 +52,7 @@ export class NavbarComponent implements OnInit {
         this.user = data1;
         this.user = this.user.data;
         console.log(data1);
+        this.auth.userConnected(this.user);
       }
     );
   }

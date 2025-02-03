@@ -10,6 +10,8 @@ const db = knex(knexConfig);
 const Joi = require("joi");
 const nodemailer = require("nodemailer");
 const logger = require("../../middlewares/logger");
+const { message } = require("../upload/joischema");
+const { loggers } = require("winston");
 Model.knex(db);
 const signup = asyncErrorHandler(async (req, res, next) => {
   const signupSchema = Joi.object({
@@ -232,4 +234,35 @@ const refresh = async (req, res) => {
     console.log("err", err);
   }
 };
-module.exports = { signup, login, forgot, updatepassword, refresh };
+const notification = async (req, res) => {
+  try {
+    const notiData = await db("notifications")
+      .select("message")
+      .where("status", "=", "unread")
+      .andWhere("user_id", "=", req.id);
+    // const update = await db("notifications")
+    //   .update("status", "read")
+    //   .where("status", "=", "unread")
+    //   .andWhere("user_id", "=", req.id);
+    // console.log(notiData);
+    const nn = notiData.map((data) => data.message).join(",");
+    console.log(nn);
+
+    res.json(
+      encryptData({
+        data: nn,
+        message: "success",
+      })
+    );
+  } catch (err) {
+    console.log(err);
+  }
+};
+module.exports = {
+  signup,
+  login,
+  forgot,
+  updatepassword,
+  refresh,
+  notification,
+};

@@ -25,21 +25,16 @@ const editproduct = async (req, res) => {
         product_image: productImage,
       })
       .where({ product_id: product_id });
-    // console.log("Inserted product ID:", productId);
-    const data = {
-      vendor_id: vendor,
+
+    await db("product_to_vendor").del().where({ product_id: product_id });
+    const vendorData = vendor.map((v) => ({
+      vendor_id: v,
       product_id: product_id,
       status: "1",
-    };
-    // console.log(data);
+    }));
+    await db("product_to_vendor").insert(vendorData);
 
-    await db("product_to_vendor")
-      .update({ vendor_id: vendor, status: "1" })
-      .where({ product_id: product_id });
     console.log("Vendor associations added successfully.");
-
-    // console.log("jandnj", req.body);
-
     res.json(
       encryptData({
         message: "successfull",

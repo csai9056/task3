@@ -18,7 +18,6 @@ export class MovetocardComponent implements OnInit {
     private toastrService: ToastrService
   ) {
     this.cart = this.dashservice.cartArray;
-    // console.log('move', this.cart, this.dashservice.cartArray);
   }
   quantity: number[] = Array(10).fill(0);
   i: number = 10;

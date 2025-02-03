@@ -14,11 +14,12 @@ const knexconfig = require("../../knexfile");
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
   const jsonData = XLSX.utils.sheet_to_json(sheet);
+  // console.log(jsonData);
+
   let errorArray = [];
   let dataArray = [];
   for (let row of jsonData) {
     const { error, value } = joi.validate(row);
-
     if (error) {
       errorArray.push({
         ...row,
@@ -75,13 +76,20 @@ const knexconfig = require("../../knexfile");
     if (errorArray.length > 0) {
       console.log("error");
 
-      await axios.post(`http://localhost:4000/dash/importdata`, {
-        id: import_id,
-        data: dataArray,
-        validData: dataArray.length,
-        invalidData: errorArray.length,
-        error: errorFileKey,
-      });
+      const ax = axios
+        .post(`http://localhost:4000/dash/importdata`, {
+          id: import_id,
+          data: dataArray,
+          validData: dataArray.length,
+          invalidData: errorArray.length,
+          error: `https://akv-interns.s3.ap-south-1.amazonaws.com/${errorFileKey}`,
+        })
+        .then((data) => {
+          console.log("axkhb", data);
+        })
+        .catch((err) => {
+          console.log("err", err);
+        });
     } else {
       console.log("success");
 
@@ -92,8 +100,6 @@ const knexconfig = require("../../knexfile");
         invalidData: errorArray.length,
       });
     }
-
-    console.log("Data inserted successfully");
   } catch (err) {
     console.error("Database insertion error:", err);
     errorArray.push({
@@ -101,5 +107,9 @@ const knexconfig = require("../../knexfile");
       details: err.message,
     });
   }
-  parentPort.postMessage({ dataArray, errorArray, import_id, errorFileKey });
+  console.log("Data inserted successfully 2");
+  setTimeout(() => {
+    console.log("Final message before exiting...");
+    parentPort.postMessage({ dataArray, errorArray, import_id, errorFileKey });
+  }, 2000);
 })();

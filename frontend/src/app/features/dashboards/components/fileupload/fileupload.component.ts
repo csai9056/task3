@@ -48,8 +48,8 @@ export class FileuploadComponent implements OnInit {
       const fileType = this.selectedFile.type;
       const flodername = 'files';
       // console.log('befors pre', this.user.user_id);
-      const folderName="profile-photos";
-      this.aws.getPresignedUrl(fileName, fileType, '-1',folderName).subscribe({
+      const folderName = 'profile-photos';
+      this.aws.getPresignedUrl(fileName, fileType, '-1', folderName).subscribe({
         next: (response) => {
           const { presignedUrl, fileName, userId } = response;
           this.uploadToS3(presignedUrl, fileName, userId);
@@ -135,78 +135,5 @@ export class FileuploadComponent implements OnInit {
     }
   }
   modalFileType: string | null = null;
-  modalFileContent: SafeResourceUrl | string | null = null; // Updated to accept string for images
-  //   showFile(fileName: string): void {
-  //     this.http
-  //       .get<{ urls: { fileName: string; url: string }[] }>(
-  //         'http://localhost:4000/api/get-presigned-urls-for-get',
-  //         {
-  //           params: { fileNames: fileName },
-  //         }
-  //       )
-  //       .subscribe({
-  //         next: (response) => {
-  //           const fileData = response.urls.find(
-  //             (file) => file.fileName === fileName
-  //           );
-  //           if (!fileData) {
-  //             console.error('File URL not found for:', fileName);
-  //             alert('File URL not found');
-  //             return;
-  //           }
-
-  //           this.http.get(fileData.url, { responseType: 'blob' }).subscribe({
-  //             next: (fileBlob: Blob) => {
-  //               this.modalFileType = fileBlob.type;
-
-  //               // Handle image files (JPEG, PNG, etc.)
-  //               if (fileBlob.type.startsWith('image')) {
-  //                 const fileReader = new FileReader();
-  //                 fileReader.onload = () => {
-  //                   this.modalFileContent = fileReader.result as string; // Data URL for the image
-  //                   this.showModal = true;
-  //                 };
-  //                 fileReader.readAsDataURL(fileBlob);
-  //               }
-  //               // Handle PDF files
-  //               else if (fileBlob.type === 'application/pdf') {
-  //                 const pdfURL = URL.createObjectURL(fileBlob);
-  //                 this.modalFileContent =
-  //                   this.sanitizer.bypassSecurityTrustResourceUrl(pdfURL);
-  //                 this.showModal = true;
-  //               }
-  //               // Handle text files
-  //               else if (fileBlob.type.startsWith('text')) {
-  //                 const fileReader = new FileReader();
-  //                 fileReader.onload = () => {
-  //                   this.modalFileContent = fileReader.result as string; // Plain text content
-  //                   this.showModal = true;
-  //                 };
-  //                 fileReader.readAsText(fileBlob);
-  //               }
-  //               // Handle Excel files
-  //               else if (
-  //                 fileBlob.type ===
-  //                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  //               ) {
-  //                 const fileURL = URL.createObjectURL(fileBlob);
-  //                 this.modalFileContent = fileURL; // Direct link for download
-  //                 this.showModal = true;
-  //               } else {
-  //                 console.error('Unsupported file type:', fileBlob.type);
-  //                 alert('Unsupported file type for preview.');
-  //               }
-  //             },
-  //             error: (err) => {
-  //               console.error('Error fetching file content:', err);
-  //               alert('Error fetching file content.');
-  //             },
-  //           });
-  //         },
-  //         error: (err) => {
-  //           console.error('Error fetching file URL:', err);
-  //           alert('Error fetching file URL.');
-  //         },
-  //       });
-  //   }
+  modalFileContent: SafeResourceUrl | string | null = null;
 }

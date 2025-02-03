@@ -369,48 +369,71 @@
       </div>
     </div>
   </div>
-  <div class="card-body">
-    <div *ngIf="!view && status">
-      <h5>Status</h5>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Product file name</th>
-              <th>product count</th>
-              <th>accepted</th>
-              <th>rejected</th>
-              <th>error file</th>
-              <th>status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of statusArray">
-              <td>
-                <div class="d-flex align-items-center">
-                  <!-- {{ item | json }} -->
-                  <b
-                    style="
-                      background-color: peru;
-
-                      border: 2px solid black;
-                      border-radius: 10px;
-                    "
+  <div class="container mt-4" *ngIf="!view && status && !cart">
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table
+            class="table table-hover table-bordered align-middle table-striped"
+          >
+            <thead class="table-light">
+              <tr class="text-center">
+                <th>Product File Name</th>
+                <th>Product Count</th>
+                <th>Accepted</th>
+                <th>Rejected</th>
+                <th>Error File</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of statusArray">
+                <td>{{ item?.filename }}</td>
+                <td class="text-center">{{ item?.product_count }}</td>
+                <td class="text-center text-success fw-bold">
+                  {{ item?.valid_count }}
+                </td>
+                <td class="text-center text-danger fw-bold">
+                  {{ item?.invalid_count }}
+                </td>
+                <td>
+                  <div *ngIf="item?.errorurl">
+                    <i
+                      (click)="showPreview(item?.errorurl)"
+                      class="bi bi-eye text-primary fs-5 me-2"
+                    ></i>
+                    <a
+                      href="{{ item?.errorurl }}"
+                      class="text-decoration-none text-primary"
+                    >
+                      {{
+                        item?.errorurl.replace(
+                          "https://akv-interns.s3.ap-south-1.amazonaws.com/CHARAN@0794/product-error-files/errordata/",
+                          " "
+                        )
+                      }}
+                    </a>
+                  </div>
+                  <div *ngIf="!item?.errorurl">
+                    <i class="text-muted">No error</i>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="badge fs-6"
+                    [ngClass]="{
+                      'bg-danger': item?.status === 'failed',
+                      'bg-success': item?.status === 'success',
+                      'bg-warning text-dark': item?.status === 'pending'
+                    }"
                   >
-                  </b>
-                  <span> &nbsp; {{ item?.filename }}</span>
-                </div>
-              </td>
-              <td>{{ item?.product_count }}</td>
-              <td>{{ item?.valid_count }}</td>
-              <td>{{ item?.invalid_count }}</td>
-              <td (click)="showstatus(item?.error_url)">
-                <i class="bi bi-trash text-danger"></i>
-              </td>
-              <td>{{ item?.status }}</td>
-            </tr>
-          </tbody>
-        </table>
+                    {{ item?.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -503,6 +526,29 @@
           <!-- Move to Cart Component -->
           <app-movetocard (gettable)="call2($event)"></app-movetocard>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  *ngIf="isPreviewOpen"
+  class="modal"
+  tabindex="-1"
+  style="display: block; max-width: 80%"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Preview</h5>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          (click)="closePreview()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <iframe [src]="xlsxUrl" width="100%" height="600px"></iframe>
       </div>
     </div>
   </div>

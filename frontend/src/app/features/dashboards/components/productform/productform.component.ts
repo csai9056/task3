@@ -25,6 +25,7 @@ export class ProductformComponent implements OnInit {
     private toast: ToastrService
   ) {
     // console.log('form', dashservice.getdata());
+    this.item = '';
     this.dashservice.dataSource.subscribe((data) => {
       console.log('subject', data);
       this.item = data;
@@ -82,10 +83,8 @@ export class ProductformComponent implements OnInit {
       this.aws.uploadFileToS3(presignedUrl, this.selectedFile).subscribe({
         next: (resonse) => {
           console.log('File successful uploaded in S3');
-          // console.log(image);ge
           this.image = image;
           console.log(this.image);
-
           if (this.item) {
             this.http
               .put(`${environment.url}/dash/product/updateimage`, {

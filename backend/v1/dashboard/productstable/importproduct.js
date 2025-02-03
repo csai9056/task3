@@ -13,9 +13,17 @@ const importproduct = async (req, res) => {
   try {
     if (!productsData || productsData.length === 0) {
       console.error("No product data received. Nothing to insert.");
-      return res.status(400).json({ message: "No product data provided." });
+      await trx("import_files")
+        .where("import_id", import_id)
+        .update({
+          status: status,
+          errorurl: errordata,
+          valid_count: validData,
+          invalid_count: invalidData,
+          product_count: validData + invalidData,
+        });
+      return;
     }
-
     await db.transaction(async (trx) => {
       const productsToInsert = productsData.map((product) => ({
         product_name: product.product_name,
@@ -39,7 +47,7 @@ const importproduct = async (req, res) => {
         .select("product_id");
 
       insertedProductIds.reverse();
-      console.log("Actual Inserted Product IDs:", insertedProductIds);
+      // console.log("actual product ", insertedProductIds);
       const vendorAssociations = [];
       productsData.forEach((product, index) => {
         const productId = insertedProductIds[index]?.product_id;
@@ -54,7 +62,7 @@ const importproduct = async (req, res) => {
       });
 
       if (vendorAssociations.length > 0) {
-        console.log("Inserting vendor associations...", vendorAssociations);
+        // console.log("Inserting vendor ", vendorAssociations);
         await trx("product_to_vendor").insert(vendorAssociations);
       }
       await trx("import_files")

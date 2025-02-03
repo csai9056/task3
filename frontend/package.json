@@ -27,6 +27,7 @@
     "jwt-decode": "^4.0.0",
     "ngx-toastr": "^15.0.0",
     "rxjs": "~7.5.0",
+    "socket.io-client": "^4.8.1",
     "tslib": "^2.3.0",
     "url": "^0.11.4",
     "xlsx": "^0.18.5",

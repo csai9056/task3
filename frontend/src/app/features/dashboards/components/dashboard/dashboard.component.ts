@@ -9,6 +9,7 @@ import { BehaviorSubject, debounceTime, Subject } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { error } from 'node:console';
 import { AwsService } from '../../services/aws.service';
+import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -37,7 +38,8 @@ export class DashboardComponent implements OnInit {
     private http: HttpClient,
     private dashservice: DashboardService,
     private toastrService: ToastrService,
-    private aws: AwsService
+    private aws: AwsService,
+    private sanitizer: DomSanitizer
   ) {}
   ngOnInit(): void {
     this.dashservice.delaySubject
@@ -52,12 +54,9 @@ export class DashboardComponent implements OnInit {
 
   data: any;
   onfilechange(event: any): void {
-    // console.log('event');
     const Groupfile = event.target.files;
-
     const promise = this.fun(Groupfile);
     console.log(promise);
-
     promise.then(() => {
       if (this.sendingData.length > 0) {
         console.log(this.sendingData);
@@ -111,7 +110,6 @@ export class DashboardComponent implements OnInit {
           if (data.page) this.currentPage = data.page;
           else this.currentPage = 1;
           this.totalPages = Math.ceil(this.totalitems / this.pageSize);
-          this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
           console.log(this.pages);
         },
         error: (error: any) => {
@@ -251,6 +249,7 @@ export class DashboardComponent implements OnInit {
                   next: () => {
                     uploadCount++;
                     console.log(`File uploaded: ${file.name}`);
+                    this.toastrService.success(`File uploaded: ${file.name}`);
                     if (uploadCount === Groupfile.length) {
                       resolve();
                     }
@@ -273,6 +272,20 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+  }
+  xlsxUrl: any;
+  isPreviewOpen: boolean = false;
+  showPreview(url: string): void {
+    console.log(url);
+    const viewerURL = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+      url
+    )}`;
+    this.xlsxUrl = this.sanitizer.bypassSecurityTrustResourceUrl(viewerURL);
+    this.isPreviewOpen = true;
+  }
+
+  closePreview(): void {
+    this.isPreviewOpen = false;
   }
   showstatus(data: any) {}
 }
