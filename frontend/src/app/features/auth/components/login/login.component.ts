@@ -22,11 +22,13 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private t: ToastrService
   ) {}
+
   form = {
     email: '',
     password: '',
   };
   loginform!: FormGroup;
+  personalData: any;
   ngOnInit(): void {
     this.loginform = new FormGroup({
       email: new FormControl('', [Validators.required]),
@@ -34,6 +36,7 @@ export class LoginComponent implements OnInit {
         Validators.required,
         Validators.minLength(4),
       ]),
+      role: new FormControl(''),
     });
   }
   onSubmit() {
@@ -47,8 +50,10 @@ export class LoginComponent implements OnInit {
         console.log('Login successful:', data.message);
       },
       error: (err: any) => {
-        if (err.status === 401) {
-          // alert('invalid email or password. Please try again.');
+        console.log(err);
+
+        if (err.status === 409) {
+          // alert('invalid email or password or role. Please try again.');
           this.t.error('invalid email or password', 'Please try again.');
         } else if (err.status === 400) {
           // alert('Login failed: ' + err.error.message);

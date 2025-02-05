@@ -5,6 +5,28 @@
       <p class="text-muted mb-4">Welcome back! Please enter your details.</p>
       <form [formGroup]="loginform" (ngSubmit)="onSubmit()">
         <div class="mb-3">
+          <label>User</label>
+          <input type="radio" name="role" value="user" formControlName="role" />
+
+          <label>Admin</label>
+          <input
+            type="radio"
+            name="role"
+            value="admin"
+            formControlName="role"
+          />
+
+          <label>Manager</label>
+          <input
+            type="radio"
+            name="role"
+            value="manager"
+            formControlName="role"
+          />
+        </div>
+
+        <br />
+        <div class="mb-3">
           <label for="email" class="form-label">Email / Username</label>
           <input
             type="email"

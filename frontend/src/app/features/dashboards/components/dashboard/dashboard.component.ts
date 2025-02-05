@@ -1,3 +1,4 @@
+import { AuthService } from 'src/app/features/auth/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { MovetocardComponent } from './../movetocard/movetocard.component';
 import { HttpClient } from '@angular/common/http';
@@ -10,6 +11,8 @@ import * as XLSX from 'xlsx';
 import { error } from 'node:console';
 import { AwsService } from '../../services/aws.service';
 import { DomSanitizer } from '@angular/platform-browser';
+// import { io, Socket } from 'socket.io-client';
+import { ChatserviceService } from 'src/app/features/dasboards/chatservice.service';
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -29,6 +32,9 @@ export class DashboardComponent implements OnInit {
   userid: any = 1;
   sendingData: any[] = [];
   status: boolean = false;
+  display: string = 'view';
+  unreadMessages: { [key: number]: number } = {};
+  message: any;
   movecart() {
     // this.movetocart = false;
     this.dashservice.addcart(this.download);
@@ -39,7 +45,9 @@ export class DashboardComponent implements OnInit {
     private dashservice: DashboardService,
     private toastrService: ToastrService,
     private aws: AwsService,
-    private sanitizer: DomSanitizer
+    private auth: AuthService,
+    private sanitizer: DomSanitizer,
+    private chat: ChatserviceService
   ) {}
   ngOnInit(): void {
     this.dashservice.delaySubject
@@ -50,8 +58,29 @@ export class DashboardComponent implements OnInit {
       });
     this.userid = this.dashservice.getuserid();
     // this.fetchPage1(1);
-  }
+    this.getuser(this.userid);
+    // alert(this.chat.socket);
+    // console.log(this.chat.socket);
+    this.chat.socket.on('receiveMessageprivate', (data: any) => {
+      console.log(' Message received:', data);
 
+      if (this.selectedUser && data.sender_id === this.selectedUser.user_id) {
+        this.messages.push(data);
+      } else {
+        this.unreadMessages[data.sender_id] =
+          (this.unreadMessages[data.sender_id] || 0) + 1;
+      }
+    });
+  }
+  personalData: any;
+  getuser(id: any) {
+    this.personalData = this.http
+      .get(`${environment.url}/dash/getpersonaldata/per`)
+      .subscribe((data: any) => {
+        this.personalData = data.data;
+        console.log('personal', this.personalData);
+      });
+  }
   data: any;
   onfilechange(event: any): void {
     const Groupfile = event.target.files;
@@ -71,10 +100,16 @@ export class DashboardComponent implements OnInit {
     });
   }
   statusArray: any;
+  userdata: any;
+  onuser() {
+    this.display = 'user';
+    this.http.get(`${environment.url}/dash/getuser`).subscribe((data: any) => {
+      console.log(data);
+      this.userdata = data.data;
+    });
+  }
   onstatus() {
-    this.view = false;
-    this.status = true;
-    this.cart = false;
+    this.display = 'status';
     this.http.get(`${environment.url}/dash/status`).subscribe((data: any) => {
       console.log('status', data);
       this.statusArray = data.data;
@@ -118,6 +153,7 @@ export class DashboardComponent implements OnInit {
       });
   }
   onview() {
+    this.display = 'view';
     this.view = true;
     this.status = false;
   }
@@ -125,6 +161,7 @@ export class DashboardComponent implements OnInit {
   user: any;
 
   oncart() {
+    this.display = 'cart';
     this.view = false;
     this.status = false;
 
@@ -282,6 +319,53 @@ export class DashboardComponent implements OnInit {
     )}`;
     this.xlsxUrl = this.sanitizer.bypassSecurityTrustResourceUrl(viewerURL);
     this.isPreviewOpen = true;
+  }
+  onuseredit(item: any) {
+    this.dashservice.addpersonalData(item);
+  }
+
+  selectedUser: any;
+
+  messages: any[] = [];
+  openChat(user: any) {
+    this.selectedUser = user;
+    this.messages = [];
+    this.unreadMessages[user.user_id] = 0;
+
+    this.chat.socket.emit('joinChat', this.personalData.user_id);
+
+    console.log(`Joined chat with user ${user.username}`);
+
+    this.http
+      .get<any>(
+        `http://localhost:4000/chat-history/${this.personalData?.user_id}/${user.user_id}`
+      )
+      .subscribe(
+        (data) => {
+          console.log(data);
+
+          this.messages = data.messages;
+        },
+        (error) => console.error('Error fetching chat history:', error)
+      );
+  }
+  sendMessage(message: string) {
+    if (!this.selectedUser || !message.trim()) return;
+    console.log(message);
+
+    const newMessage: any = {
+      sender_id: this.personalData.user_id,
+      message,
+      created_at: new Date(),
+    };
+    this.messages.push(newMessage);
+    this.chat.socket.emit('sendMessage', {
+      sender_id: this.personalData?.user_id,
+      receiver_id: this.selectedUser.user_id,
+      message,
+    });
+
+    console.log(`📨 Sent message: ${message} to ${this.selectedUser.username}`);
   }
 
   closePreview(): void {

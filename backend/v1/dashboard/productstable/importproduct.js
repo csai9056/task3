@@ -34,7 +34,7 @@ const importproduct = async (req, res) => {
         product_image: product.product_image,
       }));
 
-      console.log("Inserting products into database...", productsToInsert);
+      // console.log("Inserting products into database...", productsToInsert);
 
       const [firstInsertId] = await trx("products").insert(productsToInsert);
       if (!firstInsertId) {
@@ -76,8 +76,10 @@ const importproduct = async (req, res) => {
         });
 
       console.log("Products and vendor associations inserted successfully");
+      // await trx.commit()
     });
   } catch (error) {
+    // await trx.rollback();
     console.error("Error inserting products and vendor associations:", error);
     res
       .status(500)

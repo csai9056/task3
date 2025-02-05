@@ -11,17 +11,12 @@ const cornfunction = async (io, userSockets) => {
     .select("fileurl", "user_id", "import_id")
     .where("status", "pending");
   console.log(pendingData);
-
-  const encodedvendors = await axios.get(`http://localhost:4000/dash/vendor`);
-  const encodedcategories = await axios.get(
-    `http://localhost:4000/dash/categories`
-  );
-  const vendors = decryptPayloadaxios(encodedvendors.data).data;
+  const vendors = await db("vendors").select("*");
+  const categories = await db("categories").select("*");
   const vendorMap = Object.fromEntries(
     vendors.map(({ vendor_name, vendor_id }) => [vendor_name.trim(), vendor_id])
   );
 
-  const categories = decryptPayloadaxios(encodedcategories.data).data;
   const categoriesMap = Object.fromEntries(
     categories.map(({ category_name, category_id }) => [
       category_name.trim(),

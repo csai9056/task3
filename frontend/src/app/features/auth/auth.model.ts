@@ -19,6 +19,5 @@ import { ResetComponent } from './components/reset/reset.component';
     ResetComponent,
   ],
   imports: [CommonModule, ReactiveFormsModule, AuthRoutingModule],
-  providers: [AuthService],
 })
 export class AuthModule {}

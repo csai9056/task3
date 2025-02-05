@@ -17,19 +17,25 @@ const signup = asyncErrorHandler(async (req, res, next) => {
   const signupSchema = Joi.object({
     firstname: Joi.string().min(2).max(30).required(),
     lastname: Joi.string().min(2).max(30).required(),
-    email: Joi.string().email().required(),
+    email: Joi.string().required(),
     password: Joi.string()
       .min(6)
       .pattern(new RegExp("^[a-zA-Z0-9]{6,30}$"))
       .required(),
+    Region: Joi.string(),
   });
-  const { firstname, lastname, email, password } = req.body;
+  console.log(req.body);
+
+  const { firstname, lastname, email, password, Region } = req.body;
   const username = email;
   const { error } = signupSchema.validate(req.body);
+  console.log(req.body, firstname, lastname, email, password, Region);
   if (error) {
+    console.log(error);
+
     return res.status(400).json({ message: error.details[0].message });
   }
-  // console.log(req.body, firstname, lastname, email, password);
+  console.log(req.body, firstname, lastname, email, password, Region);
   try {
     if (!firstname || !lastname || !email || !password) {
       return next(CustomError("All fields are required", 400));
@@ -53,10 +59,18 @@ const signup = asyncErrorHandler(async (req, res, next) => {
       updated_at: new Date(),
     };
     const result = await db("users").insert(newUser);
-    return res.status(201).json({
-      message: "User registered successfully.",
+    const result1 = await db("userdetails").insert({
       user_id: result[0],
+      role: "user",
+      region: Region,
     });
+    console.log("success");
+    res.status(201).json(
+      encryptData({
+        message: "User registered successfully.",
+        user_id: result[0],
+      })
+    );
   } catch (error) {
     console.error("Signup error:", error);
     return next(CustomError("An error occurred during signup.", 500));
@@ -66,25 +80,32 @@ const login = asyncErrorHandler(async (req, res, next) => {
   const loginSchema = Joi.object({
     email: Joi.string().required(),
     password: Joi.string().required(),
+    role: Joi.string(),
   });
+  console.log(req.body);
+
   const { error } = loginSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
   try {
     const details = await db("users").where({ email }).first();
     if (!details) {
-      // res.status(401).json(
-      //   encryptData({
-      //     error: "username not found",
-      //   })
-      // );
       return next(CustomError("Username not found", 404));
     }
     const vaild = await bcrypt.compare(password, details.password);
+    const role_Valid = await db("userdetails")
+      .where({ user_id: details.user_id })
+      .andWhere({ role: role })
+      .first();
+    console.log("ro", role_Valid);
+
     if (!vaild) {
-      return next(CustomError("wrong credential", 401));
+      return next(CustomError("wrong credential", 409));
+    }
+    if (!role_Valid) {
+      return next(CustomError("wrong credential", 409));
     }
     const accessToken = jwt.sign({ userId: details?.user_id }, "key", {
       expiresIn: "1h",

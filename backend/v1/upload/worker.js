@@ -38,12 +38,23 @@ const knexconfig = require("../../knexfile");
         let venid = [];
         ven = value.vendor_id.split(",");
         for (let id of ven) {
-          venid.push(vendorMap[id]);
+          if (vendorMap[value.vendor_id])
+            venid.push(vendorMap[value.vendor_id]);
+          else {
+            errorArray.push({
+              ...row,
+              error: "Vendor or category not found",
+            });
+            break;
+          }
         }
-        value.vendor_id = venid;
-        value.category_id = categoriesMap[value.category_id];
-        value.status = value.status === "In Stock" ? "1" : "0";
-        dataArray.push(value);
+        if (venid.length > 0) {
+          value.vendor_id = venid;
+          value.category_id = categoriesMap[value.category_id];
+          value.status = value.status === "In Stock" ? "1" : "0";
+          // console.log(value);
+          dataArray.push(value);
+        }
       } else {
         errorArray.push({
           ...row,

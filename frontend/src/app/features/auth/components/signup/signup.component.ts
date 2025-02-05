@@ -1,5 +1,5 @@
 import { Toast, ToastrService } from 'ngx-toastr';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -8,12 +8,13 @@ import {
 } from '@angular/forms';
 import { AuthService } from '../../auth.service';
 import { Route, Router } from '@angular/router';
+import { first } from 'rxjs';
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css'],
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit {
   signupForm: FormGroup;
   constructor(
     private authservice: AuthService,
@@ -28,8 +29,14 @@ export class SignupComponent {
         Validators.required,
         Validators.minLength(4),
       ]),
+      Region: new FormControl('', [
+        Validators.required,
+        Validators.minLength(4),
+      ]),
     });
   }
+  personalData: any;
+  ngOnInit(): void {}
   onSubmit() {
     this.authservice.signup(this.signupForm.value).subscribe({
       next: (data: any) => {

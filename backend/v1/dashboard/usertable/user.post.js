@@ -25,4 +25,44 @@ const user = async (req, res) => {
     logger.error(err);
   }
 };
-module.exports = user;
+const getUser = async (req, res) => {
+  user_id = req.id;
+  try {
+    const details = await db("userdetails")
+      .select("region")
+      .where("user_id", user_id)
+      .first();
+    // console.log(details);
+    const data = await db("userdetails")
+      .select("*")
+      .where("region", details.region)
+      .leftJoin("users", "users.user_id", "userdetails.user_id");
+    res.status(200).json(
+      encryptData({
+        data: data,
+      })
+    );
+  } catch (err) {
+    logger.error(err);
+  }
+};
+const getpersonaldata = async (req, res) => {
+  user_id = req.id;
+  try {
+    const data = await db("userdetails")
+      .select("*")
+      .leftJoin("users", "users.user_id", "userdetails.user_id")
+      .where("userdetails.user_id", user_id)
+      .first();
+
+    res.status(200).json(
+      encryptData({
+        data: data,
+      })
+    );
+  } catch (err) {
+    logger.error(err);
+  }
+};
+
+module.exports = { user, getUser, getpersonaldata };

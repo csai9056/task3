@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { io, Socket } from 'socket.io-client';
 import { AuthService } from 'src/app/features/auth/auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { ChatserviceService } from 'src/app/features/dasboards/chatservice.service';
 
 @Component({
   selector: 'app-navbar',
@@ -23,7 +24,8 @@ export class NavbarComponent implements OnInit {
     private router: Router,
     private Http: HttpClient,
     private auth: AuthService,
-    private toast: ToastrService
+    private toast: ToastrService,
+    private chat: ChatserviceService
   ) {}
   jwtToken: string = ' ';
   notifications: any;
@@ -52,7 +54,7 @@ export class NavbarComponent implements OnInit {
         this.user = data1;
         this.user = this.user.data;
         console.log(data1);
-        this.auth.userConnected(this.user);
+        //this.chat.userConnected(this.user);
       }
     );
   }

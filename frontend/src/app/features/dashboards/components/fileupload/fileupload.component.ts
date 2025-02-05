@@ -5,6 +5,7 @@ import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { ChatserviceService } from 'src/app/features/dasboards/chatservice.service';
 @Component({
   selector: 'app-fileupload',
   templateUrl: './fileupload.component.html',
@@ -12,10 +13,48 @@ import { SafeResourceUrl } from '@angular/platform-browser';
 })
 export class FileuploadComponent implements OnInit {
   imageUrl: string = '';
+  user: any;
+  messages: any[] = [];
+  newMessage: string = '';
+  showChatWindow = false;
+  username: string = '';
+  roomName: string = '';
+  roomJoined: boolean = false;
   data: any;
-  constructor(private aws: AwsService, private http: HttpClient) {}
+  constructor(
+    private aws: AwsService,
+    private http: HttpClient,
+    private chatService: ChatserviceService
+  ) {}
   ngOnInit(): void {
     this.getawsobject();
+    if (sessionStorage) {
+      const jwtToken = sessionStorage.getItem('access_token');
+      if (jwtToken) {
+        const payload = jwtToken.split('.')[1];
+        this.user = JSON.parse(atob(payload));
+        console.log(this.user);
+        this.getUserInfo(this.user.userId);
+      } else {
+        console.error('Token not found .');
+      }
+    }
+    this.getuser(this.user.userId);
+    this.chatService.messages$.subscribe((messages) => {
+      this.messages = messages;
+    });
+  }
+
+  getUserInfo(id: number): void {
+    this.http
+      .post(`${environment.url}/dash/userdata`, { id: id })
+      .subscribe((data1) => {
+        this.user = data1;
+        this.user = this.user.data;
+        this.username = this.user.username;
+        console.log(data1);
+        this.chatService.userConnected(this.user);
+      });
   }
   selectedFile: any;
   file1: any;
@@ -41,6 +80,15 @@ export class FileuploadComponent implements OnInit {
     const checked = event.target.checked;
     file.selected = checked;
     console.log(this.files);
+  }
+  personalData: any;
+  getuser(id: any) {
+    this.personalData = this.http
+      .get(`${environment.url}/dash/getpersonaldata/per`)
+      .subscribe((data: any) => {
+        this.personalData = data.data;
+        console.log('personal', this.personalData);
+      });
   }
   onUpload(): void {
     if (this.selectedFile) {
@@ -136,4 +184,40 @@ export class FileuploadComponent implements OnInit {
   }
   modalFileType: string | null = null;
   modalFileContent: SafeResourceUrl | string | null = null;
+
+  toggleChatWindow() {
+    this.showChatWindow = !this.showChatWindow;
+  }
+
+  sendMessage() {
+    if (this.newMessage.trim()) {
+      const messageData = {
+        user: this.username,
+        message: this.newMessage,
+        room: this.roomName,
+        timestamp: new Date(),
+      };
+      this.chatService.sendMessage(messageData);
+      this.newMessage = '';
+    }
+  }
+  createRoom() {
+    if (this.roomName.trim()) {
+      this.roomJoined = true;
+      this.chatService.createRoom(this.roomName);
+    }
+  }
+  joinRoom() {
+    if (this.roomName.trim()) {
+      this.roomJoined = true;
+      this.chatService.joinRoom(this.roomName);
+    }
+  }
+  exitRoom() {
+    if (this.roomName.trim()) {
+      this.roomJoined = false;
+      this.chatService.leaveRoom(this.roomName);
+      this.roomName = '';
+    }
+  }
 }

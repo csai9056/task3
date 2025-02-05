@@ -8,6 +8,7 @@ import { jsPDF } from 'jspdf';
   providedIn: 'root',
 })
 export class DashboardService {
+  personalDataSubject = new Subject();
   dataSource = new Subject<any>();
   cart = new Subject<any>();
   delaySubject = new BehaviorSubject<number>(1);
@@ -41,6 +42,9 @@ export class DashboardService {
   }
   addproducts(productdata: any) {
     return this.http.post(`${environment.url}/dash/product`, productdata);
+  }
+  addpersonalData(item: any) {
+    this.personalDataSubject.next(item);
   }
   setdata(item: any) {
     this.dataSource.next(item);

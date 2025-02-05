@@ -9,6 +9,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AuthService } from './features/auth/auth.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -39,6 +40,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
       useClass: DashboardInterceptor,
       multi: true,
     },
+    AuthService,
   ],
   bootstrap: [AppComponent],
 })

@@ -6,6 +6,9 @@ const dashboard = require("./v1/dashboard/dashboard.routes");
 const aws = require("./AWS/S3/aws.routes");
 const uploadrouter = require("./v1/upload/upload.router");
 require("dotenv").config();
+const knex = require("knex");
+const knexconfig = require("./knexfile");
+const db = knex(knexconfig);
 const app = express();
 const rateLimit = require("express-rate-limit");
 const decryptPayload = require("./middlewares/decrypt");
@@ -17,6 +20,7 @@ const cornfunction = require("./v1/upload/croncontroller");
 const socketIo = require("socket.io");
 const http = require("http");
 const { loggers } = require("winston");
+const encryptData = require("./middlewares/encrypt");
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -25,6 +29,7 @@ const io = socketIo(server, {
   },
 });
 let userSockets = {};
+let users = {};
 require("./v1/upload/cron")(io, userSockets);
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -36,13 +41,98 @@ const limiter = rateLimit({
   max: 10000,
   message: "Too many requests from this IP, please try again later.",
 });
+app.get("/chat-history/:sender_id/:receiver_id", async (req, res) => {
+  try {
+    console.log("Fetching chat history...");
+    const { sender_id, receiver_id } = req.params;
+
+    const messages = await db("messages")
+      .where(function () {
+        this.where({ sender_id, receiver_id }).orWhere({
+          sender_id: receiver_id,
+          receiver_id: sender_id,
+        });
+      })
+      .orderBy("created_at", "asc");
+
+    res.json(encryptData({ messages }));
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 io.on("connection", (socket) => {
-  console.log("sdfghjk");
-  socket.on("userConnected", (userid) => {
+  // console.log("sdfghjk");
+  socket.on("createRoom", (roomName) => {
+    socket.join(roomName);
+    console.log(` ${socket.id} created room: ${roomName}`);
+    socket.emit("receiveMessage", {
+      user: "Admin",
+      message: `Room has Been Created: ${roomName}`,
+      room: roomName,
+    });
+  });
+
+  socket.on("joinRoom", (roomName) => {
+    socket.join(roomName);
+    console.log(` ${socket.id} joined room: ${roomName}`);
+    socket.emit("receiveMessage", {
+      user: "Admin",
+      message: `You joined the room: ${roomName}`,
+      room: roomName,
+    });
+  });
+
+  socket.on("leaveRoom", (roomName) => {
+    socket.leave(roomName);
+    console.log(` ${socket.id} left room: ${roomName}`);
+    socket.emit("receiveMessage", {
+      user: "Admin",
+      message: `You left the room: ${roomName}`,
+      room: roomName,
+    });
+  });
+
+  socket.on("sendMessageRoom", (messageData) => {
+    io.to(messageData.room).emit("receiveMessage", messageData);
+    console.log(`Message sent to room ${messageData.room}:`, messageData);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+    delete users[socket.id];
+  });
+
+  socket.on("userConnected", (userid, username) => {
     userSockets[userid] = socket.id;
+    users[socket.id] = username;
     console.log(`User Connected ${userid}`);
   });
+  socket.on("sendMessage", ({ sender_id, receiver_id, message }) => {
+    console.log(`Message from ${sender_id} to ${receiver_id}: ${message}`);
+
+    db("messages")
+      .insert({
+        sender_id: sender_id,
+        receiver_id: receiver_id,
+        message: message,
+      })
+      .then(() => {
+        console.log("Message saved to DB");
+      })
+      .catch((err) => {
+        console.error("DB error:", err);
+      });
+
+    io.to(userSockets[receiver_id]).emit("receiveMessageprivate", {
+      sender_id,
+      message,
+      created_at: new Date(),
+    });
+  });
 });
+// const userSockets = {};
+
 app.use(limiter);
 app.use("/auth", authRouter);
 app.use("/dash", dashboard);
@@ -51,7 +141,6 @@ app.use("/api", aws);
 
 // app.use("api/upload", uploadrouter);
 app.use(globalError);
-cornfunction();
 logger.info("application started");
 
 server.listen(Port, () =>

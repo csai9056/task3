@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { FilterPipe } from 'src/app/filter.pipe';
 import { writeXLSX } from 'xlsx';
 import { MovetocardComponent } from './components/movetocard/movetocard.component';
+import { EditformComponent } from './components/editform/editform.component';
 @NgModule({
   declarations: [
     NavbarComponent,
@@ -21,6 +22,7 @@ import { MovetocardComponent } from './components/movetocard/movetocard.componen
     ProductformComponent,
     FilterPipe,
     MovetocardComponent,
+    EditformComponent,
   ],
   imports: [
     CommonModule,
