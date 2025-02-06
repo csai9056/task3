@@ -12,6 +12,7 @@ const postproduct = async (req, res) => {
     status,
     productImage,
     vendor,
+    region,
   } = req.body;
   console.log(req.body);
   try {
@@ -36,6 +37,14 @@ const postproduct = async (req, res) => {
     console.log("Vendor associations added successfully.");
 
     // console.log("jandnj", req.body);
+    await db("product_details").insert({
+      product_id: productId,
+      user_id: req.id,
+    });
+    await db("product_region").insert({
+      product_id: productId,
+      region: region,
+    });
 
     res.json(
       encryptData({

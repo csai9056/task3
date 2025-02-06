@@ -261,11 +261,11 @@ const notification = async (req, res) => {
       .select("message")
       .where("status", "=", "unread")
       .andWhere("user_id", "=", req.id);
-    // const update = await db("notifications")
-    //   .update("status", "read")
-    //   .where("status", "=", "unread")
-    //   .andWhere("user_id", "=", req.id);
-    // console.log(notiData);
+    const update = await db("notifications")
+      .update("status", "read")
+      .where("status", "=", "unread")
+      .andWhere("user_id", "=", req.id);
+    console.log(notiData);
     const nn = notiData.map((data) => data.message).join(",");
     console.log(nn);
 

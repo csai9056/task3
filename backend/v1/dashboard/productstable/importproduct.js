@@ -1,19 +1,28 @@
 const knex = require("knex");
 const knexConfig = require("../../../knexfile");
-const { error } = require("console");
-const { Logger, loggers } = require("winston");
 const db = knex(knexConfig);
-const importproduct = async (req, res) => {
-  const productsData = req.body.data;
-  const import_id = req.body.id;
-  const errordata = req.body.error;
-  const status = errordata ? "failed" : "success";
-  const validData = req.body.validData;
-  const invalidData = req.body.invalidData;
+
+module.exports = async function importproduct(
+  id,
+  data,
+  validData,
+  invalidData,
+  error
+) {
+  console.log("Starting product import...");
+
+  // Properly declare variables using let
+  let productsData = data;
+  let import_id = id;
+  let errordata = error;
+  let status = errordata ? "failed" : "success";
+
   try {
     if (!productsData || productsData.length === 0) {
       console.error("No product data received. Nothing to insert.");
-      await trx("import_files")
+
+      // Use db instance instead of trx outside the transaction
+      await db("import_files")
         .where("import_id", import_id)
         .update({
           status: status,
@@ -22,8 +31,11 @@ const importproduct = async (req, res) => {
           invalid_count: invalidData,
           product_count: validData + invalidData,
         });
+
       return;
     }
+
+    // Start a database transaction
     await db.transaction(async (trx) => {
       const productsToInsert = productsData.map((product) => ({
         product_name: product.product_name,
@@ -34,7 +46,7 @@ const importproduct = async (req, res) => {
         product_image: product.product_image,
       }));
 
-      // console.log("Inserting products into database...", productsToInsert);
+      console.log("Inserting products into database...");
 
       const [firstInsertId] = await trx("products").insert(productsToInsert);
       if (!firstInsertId) {
@@ -47,7 +59,7 @@ const importproduct = async (req, res) => {
         .select("product_id");
 
       insertedProductIds.reverse();
-      // console.log("actual product ", insertedProductIds);
+
       const vendorAssociations = [];
       productsData.forEach((product, index) => {
         const productId = insertedProductIds[index]?.product_id;
@@ -62,9 +74,10 @@ const importproduct = async (req, res) => {
       });
 
       if (vendorAssociations.length > 0) {
-        // console.log("Inserting vendor ", vendorAssociations);
+        console.log("Inserting vendor associations...");
         await trx("product_to_vendor").insert(vendorAssociations);
       }
+
       await trx("import_files")
         .where("import_id", import_id)
         .update({
@@ -76,15 +89,9 @@ const importproduct = async (req, res) => {
         });
 
       console.log("Products and vendor associations inserted successfully");
-      // await trx.commit()
     });
   } catch (error) {
-    // await trx.rollback();
     console.error("Error inserting products and vendor associations:", error);
-    res
-      .status(500)
-      .json({ message: "Database insert failed", error: error.message });
+    // Remove `res.status(...)` since `res` is not defined in a worker function
   }
 };
-
-module.exports = importproduct;

@@ -15,8 +15,6 @@ const decryptPayload = require("./middlewares/decrypt");
 const globalError = require("./utils/errorController");
 const logger = require("./middlewares/logger");
 const helmet = require("helmet");
-
-const cornfunction = require("./v1/upload/croncontroller");
 const socketIo = require("socket.io");
 const http = require("http");
 const { loggers } = require("winston");

@@ -5,6 +5,7 @@
       <button
         class="btn btn-light border-secondary"
         (click)="downloadAllSelected()"
+        *ngIf="personalData?.role !== 'user'"
       >
         Download all
       </button>
@@ -12,6 +13,7 @@
       <button
         class="btn btn-primary d-flex align-items-center gap-2"
         [disabled]="personalData?.role === 'user'"
+        *ngIf="personalData?.role === 'admin'"
       >
         <a
           class="dropdown-item py-2 rounded-5 fw-medium text-white text-decoration-none"
@@ -40,6 +42,7 @@
             class="form-check-input me-3"
             (change)="toggleFileSelection(item, $event)"
             [checked]="item.selected"
+            *ngIf="personalData?.role !== 'user'"
           />
           <i [ngClass]="getFileIcon(item?.key)" class="me-2"></i>
           <div

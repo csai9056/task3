@@ -74,12 +74,10 @@ export class DashboardComponent implements OnInit {
   }
   personalData: any;
   getuser(id: any) {
-    this.personalData = this.http
-      .get(`${environment.url}/dash/getpersonaldata/per`)
-      .subscribe((data: any) => {
-        this.personalData = data.data;
-        console.log('personal', this.personalData);
-      });
+    this.dashservice.getpersonaldata().subscribe((data: any) => {
+      this.personalData = data.data;
+      console.log('personal', this.personalData);
+    });
   }
   data: any;
   onfilechange(event: any): void {
@@ -364,12 +362,22 @@ export class DashboardComponent implements OnInit {
       receiver_id: this.selectedUser.user_id,
       message,
     });
-
     console.log(`📨 Sent message: ${message} to ${this.selectedUser.username}`);
   }
 
   closePreview(): void {
     this.isPreviewOpen = false;
   }
-  showstatus(data: any) {}
+
+  getCartDetails() {
+    this.display = 'cart';
+    this.view = false;
+    this.status = false;
+    this.dashservice
+      .getCartDetails(this.personalData)
+      .subscribe((data: any) => {
+        this.cart = data.data;
+        console.log(data);
+      });
+  }
 }

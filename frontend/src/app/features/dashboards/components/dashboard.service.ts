@@ -114,4 +114,12 @@ export class DashboardService {
   deletecart(item: any) {
     return this.http.put(`${environment.url}/dash/postcart/delete`, item);
   }
+  getCartDetails(data: any) {
+    return this.http.get(
+      `${environment.url}/dash/getcarts/full?role=${data?.role}&region=${data?.region}`
+    );
+  }
+  getpersonaldata() {
+    return this.http.get(`${environment.url}/dash/getpersonaldata/per`);
+  }
 }

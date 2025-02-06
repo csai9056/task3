@@ -74,8 +74,6 @@
         Quantity must be at least 1.
       </div>
     </div>
-
-    <!-- Unit -->
     <div class="mb-3">
       <label for="unit" class="form-label">Unit</label>
       <input
@@ -113,10 +111,17 @@
         Status is required.
       </div>
     </div>
+    <!-- <label>{{ personalData?.role }}</label> -->
 
     <!-- Upload Image -->
+
+    <div *ngIf="personalData?.role === 'admin'">
+      <label class="form-label">Region </label>
+
+      <input type="text" class="form-control" formControlName="region" />
+    </div>
     <div class="mb-3">
-      <label for="productImage" class="form-label">Upload product image</label>
+      <label for="productImage" class="form-label">Upload product image </label>
       <div
         class="border rounded d-flex justify-content-center align-items-center p-3"
         style="height: 150px"

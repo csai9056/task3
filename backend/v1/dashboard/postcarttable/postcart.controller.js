@@ -10,7 +10,7 @@ const db = knex(knexConfig);
 Model.knex(db);
 const postcart = asyncErrorHandler(async (req, res, next) => {
   let item = req.body;
-  // console.log(item);
+  console.log(item);
   const trx = await db.transaction();
   try {
     const productid = item.product_id;
@@ -49,8 +49,8 @@ const postcart = asyncErrorHandler(async (req, res, next) => {
       await trx("product_cards").insert({
         product_id: productid,
         product_name: item.product_name,
-        vendor_id: item.vendor_ids,
-        vendor_name: item.vendors,
+        vendor_id: item.vendor_id,
+        vendor_name: item.vendor_names,
         quantity: quantity,
         category: item.category,
         user_id: item.userid,

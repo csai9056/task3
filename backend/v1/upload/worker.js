@@ -1,10 +1,13 @@
 const { parentPort, workerData } = require("worker_threads");
 const s3 = require("./awsconn");
 const XLSX = require("xlsx");
+const importproduct = require("../dashboard/productstable/importproduct");
 const joi = require("./joischema");
 const knex = require("knex");
 const axios = require("axios");
 const knexconfig = require("../../knexfile");
+const { valid } = require("joi");
+const { error } = require("console");
 (async () => {
   const { fileurl, import_id, vendorMap, categoriesMap } = workerData;
   const params = { Bucket: "akv-interns", Key: fileurl };
@@ -38,9 +41,9 @@ const knexconfig = require("../../knexfile");
         let venid = [];
         ven = value.vendor_id.split(",");
         for (let id of ven) {
-          if (vendorMap[value.vendor_id])
-            venid.push(vendorMap[value.vendor_id]);
+          if (vendorMap[id]) venid.push(vendorMap[id]);
           else {
+            venid = [];
             errorArray.push({
               ...row,
               error: "Vendor or category not found",
@@ -48,6 +51,9 @@ const knexconfig = require("../../knexfile");
             break;
           }
         }
+
+        // console.log("venid.length", venid.length, value);
+
         if (venid.length > 0) {
           value.vendor_id = venid;
           value.category_id = categoriesMap[value.category_id];
@@ -64,7 +70,6 @@ const knexconfig = require("../../knexfile");
     }
   }
   // console.log(errorArray);
-
   let errorFileKey = null;
   if (errorArray.length > 0) {
     const ws = XLSX.utils.json_to_sheet(errorArray);
@@ -86,30 +91,20 @@ const knexconfig = require("../../knexfile");
   try {
     if (errorArray.length > 0) {
       console.log("error");
-
-      const ax = axios
-        .post(`http://localhost:4000/dash/importdata`, {
-          id: import_id,
-          data: dataArray,
-          validData: dataArray.length,
-          invalidData: errorArray.length,
-          error: `https://akv-interns.s3.ap-south-1.amazonaws.com/${errorFileKey}`,
-        })
-        .then((data) => {
-          console.log("axkhb", data);
-        })
-        .catch((err) => {
-          console.log("err", err);
-        });
+      id = import_id;
+      let data = dataArray;
+      validData = dataArray.length;
+      invalidData = errorArray.length;
+      let error = `https://akv-interns.s3.ap-south-1.amazonaws.com/${errorFileKey}`;
+      let ax = importproduct(id, data, validData, invalidData, error);
     } else {
       console.log("success");
-
-      await axios.post(`http://localhost:4000/dash/importdata`, {
-        id: import_id,
-        data: dataArray,
-        validData: dataArray.length,
-        invalidData: errorArray.length,
-      });
+      let id = import_id;
+      let data = dataArray;
+      let validData = dataArray.length;
+      let invalidData = errorArray.length;
+      let error = "";
+      let ax = importproduct(id, data, validData, invalidData, error);
     }
   } catch (err) {
     console.error("Database insertion error:", err);
@@ -118,9 +113,15 @@ const knexconfig = require("../../knexfile");
       details: err.message,
     });
   }
-  console.log("Data inserted successfully 2");
+  // console.log("Data
+  //  inserted successfully 2");
   setTimeout(() => {
-    console.log("Final message before exiting...");
-    parentPort.postMessage({ dataArray, errorArray, import_id, errorFileKey });
+    // console.log("Final message before exiting...");
+    parentPort.postMessage({
+      dataArray,
+      errorArray,
+      import_id,
+      errorFileKey,
+    });
   }, 2000);
 })();

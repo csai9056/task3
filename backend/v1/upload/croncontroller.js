@@ -39,8 +39,7 @@ const cornfunction = async (io, userSockets) => {
       console.log(dataArray.length, errorArray.length);
       const userId = userSockets[item.user_id];
       // console.log(userId, io.sockets.sockets.has(userId));
-      console.log(item.import_id);
-
+      // console.log("noti", userId, io.sockets.sockets.has(userId));
       if (userId && io.sockets.sockets.has(userId)) {
         io.to(userId).emit("fileProcessed", {
           fileId: item.import_id,
@@ -61,6 +60,8 @@ const cornfunction = async (io, userSockets) => {
       console.error(`Worker error: ${err}`);
       const userId = userSockets[item.user_id];
       if (userId && io.sockets.sockets.has(userId)) {
+        // console.log("inside");
+
         io.to(userId).emit("fileProcessed", {
           fileId: item.import_id,
           status: item.status,
@@ -79,6 +80,10 @@ const cornfunction = async (io, userSockets) => {
     worker.on("exit", (code) => {
       if (code !== 0) console.error(`Worker stopped with exit code ${code}`);
     });
+
+    // let userId = userSockets[item.user_id];
+    // console.log(userId, io.sockets.sockets.has(userId));
+    // console.log("noti", userId, io.sockets.sockets.has(userId), item.user_id);
   }
 };
 

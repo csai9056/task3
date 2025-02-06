@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { Toast, ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
@@ -15,7 +16,7 @@ export class ProductformComponent implements OnInit {
   productForm: FormGroup;
   @Output() call1 = new EventEmitter<any>();
   @Output() formSubmitted = new EventEmitter<any>();
-
+  region: any;
   item: any;
   constructor(
     private fb: FormBuilder,
@@ -29,10 +30,7 @@ export class ProductformComponent implements OnInit {
     this.dashservice.dataSource.subscribe((data) => {
       console.log('subject', data);
       this.item = data;
-      // this.productName = this.item.product_name;
-      // console.log(this.productName);
       console.log(this.item);
-
       if (this.item) {
         this.populateFormForEdit();
       }
@@ -47,13 +45,13 @@ export class ProductformComponent implements OnInit {
       unit: ['', Validators.required],
       status: ['', Validators.required],
       productImage: [''],
+      region: [''],
     });
   }
   vendors: any;
   categories: any;
+  personalData: any;
   ngOnInit(): void {
-    // console.log('form', this.dashservice.getdata());
-    // console.log('aj');
     this.dashservice.getvendors().subscribe((data) => {
       this.vendors = data;
       console.log(data);
@@ -61,6 +59,10 @@ export class ProductformComponent implements OnInit {
     this.dashservice.getcategories().subscribe((data) => {
       this.categories = data;
       console.log(data);
+    });
+    this.dashservice.getpersonaldata().subscribe((data: any) => {
+      this.personalData = data.data;
+      console.log('pd', this.personalData);
     });
   }
   selectedFile: File | null = null;
@@ -136,6 +138,9 @@ export class ProductformComponent implements OnInit {
     if (this.productForm.valid) {
       // console.log(this.productForm.value);
       this.form = this.productForm.value;
+      if (this.personalData?.role !== 'admin')
+        this.form.region = this.personalData?.region;
+      console.log(this.form);
       if (this.item) {
         this.form.product_id = this.item.product_id;
         // console.log('edit', this.form);
@@ -153,6 +158,9 @@ export class ProductformComponent implements OnInit {
           },
         });
       } else {
+        if (this.personalData?.role !== 'admin')
+          this.form.region = this.personalData?.region;
+        console.log(this.form);
         this.form.productImage = this.image;
         // console.log(this.form);
         this.formSubmitted.emit(this.form);
