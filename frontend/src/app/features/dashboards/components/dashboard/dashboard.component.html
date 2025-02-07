@@ -198,6 +198,7 @@
               <th>Vendors</th>
               <th>Quantity</th>
               <th>Unit</th>
+              <th *ngIf="personalData?.role === 'admin'">Region</th>
               <th *ngIf="personalData?.role !== 'user'">Actions</th>
             </tr>
           </thead>
@@ -261,6 +262,7 @@
               </td>
               <td>{{ item?.quantity }}</td>
               <td>{{ item?.unit }}</td>
+              <td *ngIf="personalData?.role === 'admin'">{{ item?.region }}</td>
               <td *ngIf="personalData?.role !== 'user'">
                 <button
                   class="btn btn-light btn-sm me-1"
@@ -490,6 +492,7 @@
                 <th>email</th>
                 <th>edit</th>
                 <th>chat</th>
+                <th *ngIf="personalData?.role !== 'user'">delete</th>
               </tr>
             </thead>
             <tbody>
@@ -531,6 +534,12 @@
                     (click)="openChat(item)"
                   >
                     Chat
+                  </td>
+                  <td
+                    (click)="onuserdelete(item)"
+                    *ngIf="personalData?.role !== 'user'"
+                  >
+                    <i class="bi bi-trash"></i>
                   </td>
                 </ng-container>
               </tr>

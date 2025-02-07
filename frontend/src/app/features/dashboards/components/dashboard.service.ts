@@ -122,4 +122,12 @@ export class DashboardService {
   getpersonaldata() {
     return this.http.get(`${environment.url}/dash/getpersonaldata/per`);
   }
+  edituser(data: any) {
+    return this.http.put(`${environment.url}/dash/userdata/updateuser`, data);
+  }
+  onuserdelete(id: any) {
+    return this.http.delete(
+      `${environment.url}/dash/userdata/deleteuser/${id}`
+    );
+  }
 }

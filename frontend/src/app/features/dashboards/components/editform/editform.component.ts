@@ -1,3 +1,5 @@
+import { ToastrService } from 'ngx-toastr';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -32,6 +34,9 @@ export class EditformComponent implements OnInit {
   }
   personaldata: any;
   ngOnInit(): void {
+    this.getuser();
+  }
+  getuser() {
     this.dash.personalDataSubject.subscribe((data) => {
       this.personaldata = data;
       this.populateFormForEdit();
@@ -41,7 +46,11 @@ export class EditformComponent implements OnInit {
   onSubmit(): void {
     if (this.signupForm.valid) {
       console.log('User Details:', this.signupForm.value);
-      alert('User details updated successfully!');
+
+      this.dash.edituser(this.signupForm.value).subscribe((data) => {
+        alert('edited successfully');
+        this.getuser();
+      });
     }
   }
   populateFormForEdit() {

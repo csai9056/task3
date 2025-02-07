@@ -4,6 +4,8 @@ const bodyParser = require("body-parser");
 const authRouter = require("./v1/auth/auth.routes");
 const dashboard = require("./v1/dashboard/dashboard.routes");
 const aws = require("./AWS/S3/aws.routes");
+const swaggerDocs = require("./swaggerConfig");
+
 const uploadrouter = require("./v1/upload/upload.router");
 require("dotenv").config();
 const knex = require("knex");
@@ -20,6 +22,7 @@ const http = require("http");
 const { loggers } = require("winston");
 const encryptData = require("./middlewares/encrypt");
 const server = http.createServer(app);
+swaggerDocs(app);
 const io = socketIo(server, {
   cors: {
     origin: "*",

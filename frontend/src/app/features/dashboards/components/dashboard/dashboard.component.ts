@@ -118,13 +118,11 @@ export class DashboardComponent implements OnInit {
       console.log('loop');
       for (let items of this.data) {
         this.dashservice.addproducts(items).subscribe((data) => {
-          console.log(data);
+          // console.log(data);
+          this.dashservice.delaySubject.next(1);
         });
       }
       this.toastrService.success('successfully updated');
-      setTimeout(() => {
-        this.fetchPage1(1);
-      }, 500);
     }
   }
   fetchPage(page: number) {
@@ -136,7 +134,7 @@ export class DashboardComponent implements OnInit {
       .pipe()
       .subscribe({
         next: (data: any) => {
-          console.log(data);
+          console.log('productdata', data);
           this.products = data;
           console.log('products', data);
           this.totalitems = data.total;
@@ -214,7 +212,7 @@ export class DashboardComponent implements OnInit {
         console.log(data);
 
         this.toastrService.success(data.message);
-        this.fetchPage1(1);
+        this.dashservice.delaySubject.next(1);
       });
     });
   }
@@ -379,5 +377,10 @@ export class DashboardComponent implements OnInit {
         this.cart = data.data;
         console.log(data);
       });
+  }
+  onuserdelete(item: any) {
+    this.dashservice.onuserdelete(item.user_id).subscribe((data) => {
+      this.toastrService.success('delete successfully');
+    });
   }
 }

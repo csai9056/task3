@@ -44,6 +44,7 @@ const postcart = asyncErrorHandler(async (req, res, next) => {
         .update({
           quantity: cartitem?.quantity + quantity,
           status: 1,
+          das,
         });
     } else {
       await trx("product_cards").insert({
