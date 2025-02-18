@@ -91,6 +91,7 @@ module.exports = async function importproduct(
       console.log("Products and vendor associations inserted successfully");
     });
   } catch (error) {
+    trx.rollback();
     console.error("Error inserting products and vendor associations:", error);
     // Remove `res.status(...)` since `res` is not defined in a worker function
   }

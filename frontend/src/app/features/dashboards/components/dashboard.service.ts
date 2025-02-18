@@ -41,7 +41,7 @@ export class DashboardService {
     return this.http.get(`${environment.url}/dash/product`);
   }
   addproducts(productdata: any) {
-    return this.http.post(`${environment.url}/dash/product`, productdata);
+    return this.http.post(`${environment.url}/dash/product/post`, productdata);
   }
   addpersonalData(item: any) {
     this.personalDataSubject.next(item);
@@ -123,7 +123,12 @@ export class DashboardService {
     return this.http.get(`${environment.url}/dash/getpersonaldata/per`);
   }
   edituser(data: any) {
-    return this.http.put(`${environment.url}/dash/userdata/updateuser`, data);
+    // console.log(data);
+
+    return this.http.put(
+      `${environment.url}/dash/userdata/updateuser/${data.user_id}`,
+      data
+    );
   }
   onuserdelete(id: any) {
     return this.http.delete(

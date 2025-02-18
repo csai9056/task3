@@ -105,7 +105,7 @@ userrouter.get("/per", decryptPayload, getpersonaldata);
  *       401:
  *         description: Unauthorized access
  */
-userrouter.put("/updateuser", decryptPayload, updateuser);
+userrouter.put("/updateuser/:id", decryptPayload, updateuser);
 
 /**
  * @swagger

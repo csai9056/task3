@@ -17,7 +17,6 @@ const options = {
     ],
   },
   apis: [
-    "./server.js",
     "./v1/auth/auth.routes.js",
     "./v1/dashboard/dashboard.routes.js",
     "./v1/dashboard/usertable/user.router.js",

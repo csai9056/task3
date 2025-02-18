@@ -1,11 +1,12 @@
 const express = require("express");
 const cors = require("cors");
+const product = require("./models/Product");
+const category = require("./models/Category");
 const bodyParser = require("body-parser");
 const authRouter = require("./v1/auth/auth.routes");
 const dashboard = require("./v1/dashboard/dashboard.routes");
 const aws = require("./AWS/S3/aws.routes");
 const swaggerDocs = require("./swaggerConfig");
-
 const uploadrouter = require("./v1/upload/upload.router");
 require("dotenv").config();
 const knex = require("knex");
@@ -78,7 +79,7 @@ io.on("connection", (socket) => {
     socket.join(roomName);
     console.log(` ${socket.id} joined room: ${roomName}`);
     socket.emit("receiveMessage", {
-      user: "Admin",
+      user: "123",
       message: `You joined the room: ${roomName}`,
       room: roomName,
     });
@@ -88,7 +89,7 @@ io.on("connection", (socket) => {
     socket.leave(roomName);
     console.log(` ${socket.id} left room: ${roomName}`);
     socket.emit("receiveMessage", {
-      user: "Admin",
+      user: "1234t",
       message: `You left the room: ${roomName}`,
       room: roomName,
     });
@@ -144,6 +145,58 @@ app.use("/api", aws);
 app.use(globalError);
 logger.info("application started");
 
+app.get("/modal", async (req, res) => {
+  console.log("hi");
+  // // console.log(product);
+  // const data1 = await product.query().findById(2133761);
+  // const data2 = await product.query().deleteById(2133762);
+
+  // // const data1 = await product.query().select("* ");
+  // Relating a product with a category
+  // const product1 = await product.query().findById(2133761); // Find product by ID
+  // const category1 = await category.query().findById(12); // Find category by ID
+
+  // await product1.$relatedQuery("category").relate(category1); // Associate the product with the category
+
+  const data = await product
+    .query()
+    .where("product_name", "maggi")
+    .withGraphFetched("productToVendors.vendor");
+
+  // If successful, the record is added to the join table (e.g., product_categories)
+
+  // const data = await data1.$relatedQuery("category").select("*");
+  res.send({
+    // data1,
+    data,
+    // data2,
+  });
+});
+app.get("/product", async (req, res) => {
+  const data1 = await product
+    .query()
+    .withGraphFetched("category(onlyCategoryId)")
+    .modifiers({
+      onlyCategoryId: (bulider) => {
+        bulider.select("category_id");
+      },
+    })
+    .select(
+      "product_image",
+      "product_id",
+      "product_name",
+      "status",
+      "quantity_in_stock as quantity",
+      "unit_price as unit",
+      "created_at"
+      // "cc.category_id:"
+    )
+    .first();
+  console.log(data1);
+  res.send({
+    data1,
+  });
+});
 server.listen(Port, () =>
   console.log(`Server running on http://localhost:${Port}`)
 );

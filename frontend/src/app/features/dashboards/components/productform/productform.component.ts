@@ -136,7 +136,7 @@ export class ProductformComponent implements OnInit {
   form: any;
   onSubmit() {
     if (this.productForm.valid) {
-      // console.log(this.productForm.value);
+      // console.log(this.productForm.value)
       this.form = this.productForm.value;
       if (this.personalData?.role !== 'admin')
         this.form.region = this.personalData?.region;

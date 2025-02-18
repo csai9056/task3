@@ -497,7 +497,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of userdata">
-                <ng-container *ngIf="item.user_id != personalData?.user_id">
+                <ng-container>
                   <td>
                     <img
                       src="{{ item?.profile_pic }}"

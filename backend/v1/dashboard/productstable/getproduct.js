@@ -1,13 +1,11 @@
 const knex = require("knex");
 const knexConfig = require("../../../knexfile");
 const encryptData = require("../../../middlewares/encrypt");
-
 const db = knex(knexConfig);
-
+const product = require("../../../models/Product");
 const getproduct = async (req, res) => {
   const { page = 1, limit = 5, search = "", filters = "{}" } = req.query;
   const offset = (page - 1) * limit;
-
   try {
     const parsedFilters = JSON.parse(filters);
     const user_id = req.id;
@@ -15,8 +13,21 @@ const getproduct = async (req, res) => {
       .select("role", "region")
       .where("user_id", user_id)
       .first();
-
     const isAdmin = personalData?.role === "admin";
+    // const data1 = await product
+    //   .query()
+    //   .select(
+    //     "product_image",
+    //     "product_id",
+    //     "product_name",
+    //     "status",
+    //     "quantity_in_stock as quantity",
+    //     "unit_price as unit",
+    //     "category_name as category",
+    //     "created_at"
+    //   );
+    // console.log(data1);
+
     let query = db("products as p")
       .select(
         "p.product_image",
@@ -40,7 +51,6 @@ const getproduct = async (req, res) => {
         .leftJoin("product_region as pr", "pr.product_id", "p.product_id")
         .where("pr.region", personalData?.region);
     }
-
     query = applyFilters(query, search, parsedFilters);
     query = query
       .groupBy("p.product_id", "pd.region")
@@ -66,13 +76,11 @@ const getproduct = async (req, res) => {
     const total = await totalQuery;
     // console.log(data);
 
-    res.json(
-      encryptData({
-        data,
-        total: total[0]?.total || 0,
-        page,
-      })
-    );
+    res.json({
+      data,
+      total: total[0]?.total || 0,
+      page,
+    });
   } catch (err) {
     console.error("Error fetching product data:", err);
     res.status(500).json(encryptData({ error: "Error fetching product data" }));

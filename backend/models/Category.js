@@ -32,6 +32,9 @@ class Category extends Model {
       },
     };
   }
+  static get idColumn() {
+    return "category_id";
+  }
 }
 
 module.exports = Category;

@@ -38,9 +38,9 @@ export class ChatserviceService {
         }
       }
     );
-    // this.socket.on('taskStatus', (data) => {
+    // this.socket.on('taskStatus', (data) => {F
     //   console.log('hello');
-    //   alert(`File processing completed. Status: ${data.status}`);
+    //   alert(`File processing completed. Status: ${data.stFatus}`);
     // });
   }
 

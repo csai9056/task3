@@ -58,7 +58,7 @@ productrouter.get("/", decryptPayload, getproduct);
  *       400:
  *         description: Bad request
  */
-productrouter.post("/", decryptPayload, postproduct);
+productrouter.post("/post", decryptPayload, postproduct);
 
 /**
  * @swagger

@@ -42,12 +42,13 @@ export class EditformComponent implements OnInit {
       this.populateFormForEdit();
     });
   }
-
+  form: any;
   onSubmit(): void {
     if (this.signupForm.valid) {
       console.log('User Details:', this.signupForm.value);
-
-      this.dash.edituser(this.signupForm.value).subscribe((data) => {
+      this.form = this.signupForm.value;
+      this.form.user_id = this.personaldata?.user_id;
+      this.dash.edituser(this.form).subscribe((data) => {
         alert('edited successfully');
         this.getuser();
       });

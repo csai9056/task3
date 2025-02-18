@@ -44,7 +44,12 @@ export class DashboardInterceptor implements HttpInterceptor {
 
       return next.handle(request).pipe(
         catchError((error: HttpErrorResponse) => {
-          if (error.status === 401) {
+          // console.log('dashboard', error.error.message);
+
+          if (
+            error.status === 401 &&
+            error.error.message !== 'role unauthorized error'
+          ) {
             return this.handle401Error(request, next);
           }
           return throwError(() => error);

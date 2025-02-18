@@ -10,12 +10,11 @@ const db = knex(knexConfig);
 Model.knex(db);
 const postcart = asyncErrorHandler(async (req, res, next) => {
   let item = req.body;
-  console.log(item);
+  // console.log(item);
   const trx = await db.transaction();
   try {
     const productid = item.product_id;
     const quantity = item.quantitys;
-    // console.log("quantity", quantity);
     const userid = item.userid;
     const product = await trx("products")
       .where({ product_id: productid })

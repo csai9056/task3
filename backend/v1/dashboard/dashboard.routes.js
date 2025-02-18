@@ -27,7 +27,7 @@ const dashboard = express.Router();
  *       401:
  *         description: Unauthorized access
  */
-dashboard.use("/vendor", authMiddleware, vendorouter);
+dashboard.use("/vendor", vendorouter);
 
 /**
  * @swagger
@@ -59,7 +59,7 @@ dashboard.use("/categories", authMiddleware, catrouter);
  *       401:
  *         description: Unauthorized access
  */
-dashboard.use("/product", authMiddleware, productrouter);
+dashboard.use("/product", productrouter);
 
 /**
  * @swagger
@@ -136,7 +136,7 @@ dashboard.use("/status", authMiddleware, decryptPayload, getStatus);
  *       401:
  *         description: Unauthorized access
  */
-dashboard.use("/getcarts", authMiddleware, getcartrouter);
+dashboard.use("/getcarts", getcartrouter);
 
 /**
  * @swagger
